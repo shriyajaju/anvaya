@@ -1,0 +1,49 @@
+:root {
+  --page: #f6f6f4;
+  --surface: #ffffff;
+  --surface-2: #f0efec;
+  --border: #e6e4df;
+  --text-1: #111111;
+  --text-2: #6b6b6b;
+  --text-3: #9a9a9a;
+  --primary: #000000;
+  --on-primary: #ffffff;
+  --accent: #4a5a2a;
+  --accent-bg: #eef1e6;
+  --conf-high: #2e7d4f;
+  --conf-high-bg: #e6f4ec;
+  --conf-medium: #b7791f;
+  --conf-medium-bg: #fbf1dc;
+  --conf-low: #c0392b;
+  --conf-low-bg: #fbe5e1;
+  --review: #2f5fd1;
+  --review-bg: #e7edfb;
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.12);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --page: #1c1c1c;
+  --surface: #262626;
+  --surface-2: #2f2f2f;
+  --border: #353535;
+  --text-1: #f5f5f5;
+  --text-2: #a0a0a0;
+  --text-3: #6f6f6f;
+  --primary: #ffffff;
+  --on-primary: #000000;
+  --accent: #8fa05a;
+  --accent-bg: #2a3120;
+  --conf-high: #2e7d4f;
+  --conf-high-bg: #1f3a2b;
+  --conf-medium: #b7791f;
+  --conf-medium-bg: #3a2e14;
+  --conf-low: #c0392b;
+  --conf-low-bg: #3f1f1b;
+  --review: #2f5fd1;
+  --review-bg: #1e2a47;
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
