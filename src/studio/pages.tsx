@@ -1,3 +1,4 @@
+import { ChevronRight, Eye, Plus, Search } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -7,9 +8,13 @@ import { attention, canPublish, diffSnapshots, linkedEvidence } from '../store/r
 import { PLACEHOLDER_SITE } from '../store/seed'
 import { useAnvaya } from '../store'
 import type { Confidence, EvidenceType, Geom } from '../store/types'
-import { SiteFrame } from './Shell'
+import { PreviewPanel, SiteFrame } from './Shell'
 
-const samples = ['Coastal fort (sample)', 'Stepwell (sample)', 'Temple tank (sample)']
+const sampleSites = [
+  { name: 'Vasai Fort', place: 'Vasai, Maharashtra', status: 'Draft', tone: 'text-text-3' },
+  { name: 'Elephanta Caves', place: 'Gharapuri, Maharashtra', status: 'In review', tone: 'text-review' },
+  { name: 'Sopara Stupa', place: 'Nalasopara, Maharashtra', status: 'Archived', tone: 'text-text-3' },
+]
 
 export function Dashboard() {
   const bundles = useAnvaya((state) => state.bundles)
@@ -21,50 +26,106 @@ export function Dashboard() {
   const items = Object.values(bundles).flatMap((bundle) =>
     attention(bundle).map((item) => ({ ...item, site: bundle.site.name, id: bundle.site.id })),
   )
+  const dot = { low: 'bg-conf-low', medium: 'bg-conf-medium', review: 'bg-review' }
+  const primary = Object.values(bundles).find((bundle) => bundle.site.id === 'kanheri') ?? Object.values(bundles)[0]
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Studio</p>
-        <h1 className="mt-2 text-[40px] font-light leading-[48px]">
-          {greeting}, {session?.name ?? 'there'}
-        </h1>
-        <p className="mt-3 max-w-xl text-[15px] leading-6 text-text-2">
-          Kanheri Caves is already published. Start a placeholder hall when you want to author a site from scratch.
-        </p>
-        <div className="mt-8 grid gap-3">
-          {items.length === 0 ? (
-            <Card>
-              <p className="text-[15px]">Nothing needs attention.</p>
-            </Card>
-          ) : (
-            items.slice(0, 6).map((item) => (
+    <div className="grid items-start gap-6 min-[1100px]:grid-cols-[minmax(0,600px)_minmax(320px,1fr)]">
+      <div className="grid gap-8">
+        <div>
+          <h1 className="text-[40px] font-light leading-[48px]">
+            {greeting}, {session?.name ?? 'there'}
+          </h1>
+          <p className="mt-2 text-[15px] leading-6 text-text-2">
+            {Object.values(bundles).length} site in progress · {items.length} item{items.length === 1 ? '' : 's'} need{items.length === 1 ? 's' : ''} your attention
+          </p>
+        </div>
+        <section>
+          <SectionLabel>Start</SectionLabel>
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            <button type="button" onClick={() => navigate('/studio/create')} className="relative h-[120px] overflow-hidden rounded-card bg-surface px-5 py-4 text-left shadow-card">
+              <span className="absolute -right-2 -top-8 h-24 w-24 rounded-full bg-[#6a45d6] blur-[24px]" />
+              <span className="absolute -right-4 top-2 h-16 w-16 rounded-full bg-[#f45fbf] blur-[18px]" />
+              <span className="relative grid h-10 w-10 place-items-center rounded-[10px] bg-surface-2"><HomeIcon /></span>
+              <span className="relative mt-3 block text-[18px] font-medium leading-[26px]">Create a new site</span>
+            </button>
+            <button type="button" onClick={() => navigate('/studio/site/evidence')} className="h-[120px] rounded-card bg-surface px-5 py-4 text-left shadow-card">
+              <span className="grid h-10 w-10 place-items-center rounded-[10px] bg-surface-2 text-text-2">↑</span>
+              <span className="mt-3 block text-[18px] font-medium leading-[26px]">Upload evidence</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (primary) setActive(primary.site.id)
+                navigate('/studio/site/reconstruct')
+              }}
+              className="h-[120px] rounded-card bg-surface px-5 py-4 text-left shadow-card"
+            >
+              <span className="grid h-10 w-10 place-items-center rounded-[10px] bg-surface-2 text-text-2">▣</span>
+              <span className="mt-3 block text-[18px] font-medium leading-[26px]">Continue working</span>
+            </button>
+          </div>
+        </section>
+        {primary ? (
+          <section>
+            <SectionLabel>Continue working</SectionLabel>
+            <button
+              type="button"
+              onClick={() => {
+                setActive(primary.site.id)
+                navigate('/studio/site/reconstruct')
+              }}
+              className="mt-3 flex w-full items-center gap-3 rounded-card bg-surface px-5 py-4 text-left shadow-card"
+            >
+              <span className="h-14 w-14 shrink-0 rounded-btn bg-surface-2" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px]">{primary.site.name}</span>
+                <span className="block text-[13px] text-text-2">{primary.site.location} · edited 2 h ago</span>
+              </span>
+              <span className="w-40">
+                <span className="inline-flex rounded-full bg-surface-2 px-2.5 py-0.5 text-[13px] text-text-2">Reconstruct</span>
+                <span className="mt-1 block text-[13px] text-text-2">67%</span>
+                <span className="mt-1 block h-1 w-[120px] rounded-full bg-surface-2"><span className="block h-1 w-[67%] rounded-full bg-primary" /></span>
+              </span>
+              <ChevronRight size={18} className="text-text-3" />
+            </button>
+          </section>
+        ) : null}
+        <section>
+          <SectionLabel>Needs your attention</SectionLabel>
+          <div className="mt-3 rounded-card bg-surface p-6 shadow-card">
+            {items.slice(0, 3).map((item) => (
               <button
                 key={`${item.site}-${item.title}-${item.detail}`}
                 type="button"
-                className="rounded-card bg-surface p-4 text-left shadow-card"
+                className="flex w-full gap-3 border-b border-line py-3 text-left last:border-0"
                 onClick={() => {
                   setActive(item.id)
                   navigate('/studio/site/reconstruct')
                 }}
               >
-                <SectionLabel>{item.site}</SectionLabel>
-                <p className="mt-2 text-[15px]">{item.title}</p>
-                <p className="text-[13px] text-text-2">{item.detail}</p>
+                <span className={`mt-2 h-2 w-2 shrink-0 rounded-full ${dot[item.level]}`} />
+                <span>
+                  <span className="block text-[15px]">{item.title}</span>
+                  <span className="block text-[13px] text-text-2">{item.site} · {item.detail}</span>
+                </span>
               </button>
-            ))
-          )}
-        </div>
+            ))}
+            <button type="button" className="mt-3 text-[13px] text-accent" onClick={() => navigate('/studio/review-queue')}>
+              View review queue
+            </button>
+          </div>
+        </section>
       </div>
-      <button
-        type="button"
-        onClick={() => navigate('/studio/create')}
-        className="relative min-h-64 overflow-hidden rounded-card p-6 text-left text-white shadow-card"
-      >
-        <span className="absolute inset-0 bg-gradient-to-br from-[#4B2FA6] via-[#1A3FE0] to-[#F45FBF]" />
-        <span className="relative block text-[11px] uppercase tracking-[0.08em]">Create</span>
-        <span className="relative mt-4 block text-3xl font-light">Start a placeholder site</span>
-      </button>
+      <PreviewPanel caption="Version 1.0 · preview" />
     </div>
+  )
+}
+
+function HomeIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M3 9.5 10 3l7 6.5V17a1 1 0 0 1-1 1h-4v-5H8v5H4a1 1 0 0 1-1-1V9.5Z" fill="none" stroke="#778188" strokeWidth="1.5" />
+    </svg>
   )
 }
 
@@ -72,39 +133,75 @@ export function Sites() {
   const bundles = useAnvaya((state) => state.bundles)
   const setActive = useAnvaya((state) => state.setActive)
   const navigate = useNavigate()
+  const [filter, setFilter] = useState('All')
+  const [query, setQuery] = useState('')
+  const filters = ['All', 'Draft', 'In review', 'Published', 'Archived']
+  const live = Object.values(bundles).filter((bundle) => bundle.site.name.toLowerCase().includes(query.toLowerCase()))
   return (
     <div>
-      <h1 className="text-[32px] font-normal">My sites</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-[40px] font-light leading-[48px]">My sites</h1>
+        <div className="flex items-center gap-3">
+          <label className="flex h-10 items-center gap-2 rounded-btn border border-line bg-surface px-3 text-[14px] text-text-3">
+            <Search size={16} />
+            <input className="w-36 bg-transparent text-text-1 outline-none" placeholder="Search sites" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </label>
+          <button type="button" onClick={() => navigate('/studio/create')} className="flex h-10 items-center gap-2 rounded-btn bg-primary px-4 text-[11px] font-medium uppercase tracking-[0.08em] text-on-primary">
+            <Plus size={14} /> New site
+          </button>
+        </div>
+      </div>
+      <div className="mt-6 flex gap-2">
+        {filters.map((item) => (
+          <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3 py-1.5 text-[13px] ${filter === item ? 'bg-primary text-on-primary' : 'bg-surface-2 text-text-2'}`}>
+            {item} {item === 'All' ? live.length + sampleSites.length : 1}
+          </button>
+        ))}
+      </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Object.values(bundles).map((bundle) => (
+        <button type="button" onClick={() => navigate('/studio/create')} className="flex min-h-[240px] flex-col items-center justify-center rounded-card border border-dashed border-line bg-surface text-text-2">
+          <Plus size={18} />
+          <span className="mt-2 text-[14px]">Create a new site</span>
+        </button>
+        {sampleSites.map((site) => (
+          <article key={site.name} className="overflow-hidden rounded-card bg-surface shadow-card">
+            <div className="relative h-28 bg-[#e7ebef]">
+              <span className={`absolute left-4 top-4 text-[11px] font-medium uppercase tracking-[0.08em] ${site.tone}`}>• {site.status}</span>
+            </div>
+            <div className="p-4">
+              <p className="text-[18px] font-medium">{site.name}</p>
+              <p className="text-[13px] text-text-2">{site.place}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-surface-2 text-[10px] text-text-2">AI</span>
+                <span className="h-1.5 w-24 rounded-full bg-gradient-to-r from-conf-high via-conf-medium to-conf-low" />
+              </div>
+            </div>
+          </article>
+        ))}
+        {live.map((bundle) => (
           <button
             key={bundle.site.id}
             type="button"
-            className="rounded-card bg-surface p-5 text-left shadow-card"
+            className="overflow-hidden rounded-card bg-surface text-left shadow-card"
             onClick={() => {
               setActive(bundle.site.id)
               navigate('/studio/site/overview')
             }}
           >
-            <StatusChip status={bundle.site.status} />
-            <p className="mt-4 text-xl">{bundle.site.name}</p>
-            <p className="mt-1 text-[13px] text-text-2">{bundle.site.location}</p>
+            <div className="relative h-28 bg-[#e7ebef]">
+              <span className="absolute left-4 top-4 text-[11px] font-medium uppercase tracking-[0.08em] text-conf-high">• {bundle.site.status.replace('_', ' ')}</span>
+              {bundle.versions[0] ? <span className="absolute right-4 top-4 text-[13px] text-text-2">{bundle.versions[0].number}</span> : null}
+            </div>
+            <div className="p-4">
+              <p className="text-[18px] font-medium">{bundle.site.name}</p>
+              <p className="text-[13px] text-text-2">{bundle.site.location}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-surface-2 text-[10px] text-text-2">AI</span>
+                <span className="h-1.5 w-24 rounded-full bg-gradient-to-r from-conf-high via-conf-medium to-conf-low" />
+              </div>
+            </div>
           </button>
         ))}
-        {samples.map((name) => (
-          <div key={name} className="rounded-card border border-dashed border-line p-5 text-text-3">
-            <p className="text-[11px] uppercase tracking-[0.08em]">Not editable</p>
-            <p className="mt-4 text-xl text-text-2">{name}</p>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => navigate('/studio/create')}
-          className="rounded-card bg-primary p-5 text-left text-on-primary"
-        >
-          <p className="text-[11px] uppercase tracking-[0.08em]">New</p>
-          <p className="mt-4 text-xl">Create from the placeholder</p>
-        </button>
       </div>
     </div>
   )
@@ -148,31 +245,68 @@ export function CreateSite() {
 
 export function Overview() {
   const bundle = useAnvaya((state) => state.bundle())
+  const navigate = useNavigate()
+  const openQuestions = bundle.questions.filter((item) => item.status === 'open').length
+  const missing = bundle.elements.filter((element) => element.type !== 'group' && !bundle.links.some((link) => link.elementId === element.id)).length
+  const steps = [
+    ['overview', 'Overview', 'Complete'],
+    ['document', 'Document', `${bundle.photos.length} photos · condition recorded`],
+    ['evidence', 'Evidence', openQuestions ? `${openQuestions} open questions` : `${bundle.evidence.length} sources`],
+    ['timeline', 'Timeline', `${bundle.events.length} events`],
+    ['reconstruct', 'Reconstruct', missing ? `${missing} element without evidence` : 'Evidence linked'],
+    ['stories', 'Stories', `${bundle.stories.length} story`],
+    ['review', 'Review', bundle.reviews.some((review) => review.status === 'approved') ? 'Approved' : bundle.site.status],
+    ['publish', 'Publish', bundle.versions[0] ? `Version ${bundle.versions[0].number} live` : 'Not published'],
+    ['archive', 'Archive', `${bundle.versions.length} version`],
+  ]
+  const high = bundle.elements.filter((element) => element.confidence === 'high').length
+  const medium = bundle.elements.filter((element) => element.confidence === 'medium').length
+  const low = bundle.elements.filter((element) => element.confidence === 'low').length
   return (
     <SiteFrame>
-      <SectionLabel>Overview</SectionLabel>
-      <h1 className="mt-2 text-[32px] font-normal">{bundle.site.name}</h1>
-      <p className="mt-2 text-[15px] leading-6 text-text-2">{bundle.site.description}</p>
-      <div className="mt-6 grid grid-cols-3 gap-3">
+      <div className="flex items-center gap-3">
+        <h1 className="text-[40px] font-light leading-[48px]">{bundle.site.name}</h1>
+        <StatusChip status={bundle.site.status} />
+      </div>
+      <p className="mt-2 text-[15px] text-text-2">
+        {bundle.site.type}, {bundle.site.location} · Version {bundle.versions.at(-1)?.number ?? 'draft'}
+      </p>
+      <div className="mt-6 grid grid-cols-4 gap-3">
         {[
-          ['Elements', bundle.elements.length],
-          ['Sources', bundle.evidence.length],
-          ['Versions', bundle.versions.length],
-        ].map(([label, value]) => (
-          <Card key={String(label)}>
+          ['Elements', bundle.elements.filter((element) => element.type !== 'group').length, 'text-text-1'],
+          ['Sources', bundle.evidence.length, 'text-text-1'],
+          ['Stories', bundle.stories.length, 'text-text-1'],
+          ['Open questions', openQuestions, 'text-conf-medium'],
+        ].map(([label, value, tone]) => (
+          <div key={String(label)} className="rounded-card bg-surface p-4 shadow-card">
             <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">{label}</p>
-            <p className="mt-2 text-3xl font-light">{value}</p>
-          </Card>
+            <p className={`mt-2 text-[32px] font-light ${tone}`}>{value}</p>
+          </div>
         ))}
       </div>
-      <Card label="Record">
-        <p>Location · {bundle.site.location}</p>
-        <p className="mt-1">Year · c. {bundle.site.reconstructionYear}</p>
-        <p className="mt-1">Licence · {bundle.site.licence}</p>
-        <div className="mt-3">
-          <StatusChip status={bundle.site.status} />
+      <SectionLabel>Workflow</SectionLabel>
+      <div className="mt-3 rounded-card bg-surface px-2 shadow-card">
+        {steps.map(([id, label, meta]) => (
+          <button key={id} type="button" onClick={() => navigate(`/studio/site/${id}`)} className="flex w-full items-center gap-3 border-b border-line px-3 py-3 text-left last:border-0">
+            <span className="text-text-3">○</span>
+            <span className="flex-1 text-[15px]">{label}</span>
+            <span className={`text-[13px] ${String(meta).includes('without') || String(meta).includes('open') ? 'text-conf-medium' : 'text-text-2'}`}>{meta}</span>
+            <ChevronRight size={16} className="text-text-3" />
+          </button>
+        ))}
+      </div>
+      <div className="mt-6">
+        <SectionLabel>Confidence across the site</SectionLabel>
+        <div className="mt-3 rounded-card bg-surface p-4 shadow-card">
+          <div className="flex h-2 overflow-hidden rounded-full">
+            <span className="bg-conf-high" style={{ width: `${(high / Math.max(high + medium + low, 1)) * 100}%` }} />
+            <span className="bg-conf-medium" style={{ width: `${(medium / Math.max(high + medium + low, 1)) * 100}%` }} />
+            <span className="bg-conf-low" style={{ width: `${(low / Math.max(high + medium + low, 1)) * 100}%` }} />
+          </div>
+          <p className="mt-3 text-[13px] text-text-2">{high} High · {medium} Medium · {low} Low</p>
+          <p className="text-[13px] text-text-3">Uncertainty is highest where a source is still missing.</p>
         </div>
-      </Card>
+      </div>
     </SiteFrame>
   )
 }
@@ -420,133 +554,101 @@ export function ReconstructPage() {
   const [playId, setPlayId] = useState(0)
   const [pulse, setPulse] = useState(0)
   const [adding, setAdding] = useState(false)
+  const [mode, setMode] = useState<'then' | 'now' | 'compare'>('then')
   const [name, setName] = useState('North wall')
   const [geom, setGeom] = useState<Geom>('northwall')
   const selected = bundle.elements.find((element) => element.id === ui.selectedElementId) ?? null
   const sources = selected ? linkedEvidence(bundle, selected.id) : []
+  const shown = mode === 'now' ? 0.15 : ui.thenNow
   return (
-    <div>
-      <header className="mb-4 flex items-end justify-between">
-        <div>
-          <SectionLabel>Reconstruct</SectionLabel>
-          <h1 className="text-[32px] font-normal">2D elevation</h1>
+    <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_300px]">
+      <section className="rounded-card bg-surface p-4 shadow-card">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[18px] font-medium">Elements</h2>
+          <button type="button" onClick={() => setAdding(true)} className="rounded-full bg-surface-2 px-3 py-1 text-[12px] text-text-2">+ Add</button>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => setPlayId((value) => value + 1)}>
-            Replay
-          </Button>
-          <Button size="sm" onClick={() => setAdding(true)}>
-            Add element
-          </Button>
-        </div>
-      </header>
-      <div className="grid gap-4 xl:grid-cols-[240px_1fr_300px]">
-        <Card label="Elements">
-          {bundle.elements.length === 0 ? <p className="text-text-2">None yet.</p> : null}
+        <p className="mt-3 rounded-full bg-surface-2 px-3 py-2 text-[13px] text-text-2">{bundle.site.reconstructionYear} CE</p>
+        <div className="mt-3">
           {bundle.elements.map((element) => (
             <button
               key={element.id}
               type="button"
               onClick={() => selectElement(element.id)}
-              className={`flex w-full items-center justify-between py-2 text-left ${element.id === selected?.id ? 'font-medium' : ''}`}
+              className={`flex w-full items-center gap-2 border-l-2 py-2 pl-3 text-left ${element.id === selected?.id ? 'border-conf-high bg-surface-2/60' : 'border-transparent'}`}
             >
-              <span style={{ paddingLeft: element.parentId ? 12 : 0 }}>{element.name}</span>
+              <span className="min-w-0 flex-1 truncate text-[14px]" style={{ paddingLeft: element.parentId ? 12 : 0 }}>{element.name}</span>
               {element.type !== 'group' ? <ConfidenceChip level={element.confidence} pulse={element.id === selected?.id ? pulse : 0} /> : null}
+              {element.type !== 'group' ? <Eye size={14} className="text-text-3" /> : null}
             </button>
           ))}
-        </Card>
-        <div className="relative min-h-[480px] overflow-hidden rounded-card bg-[#241f1b]">
-          <CaveElevation
-            elements={bundle.elements}
-            selectedId={selected?.id}
-            thenNow={ui.thenNow}
-            showColours={ui.showColours}
-            playId={playId}
-            onSelect={selectElement}
-          />
-          <p className="absolute bottom-4 left-4 text-[13px] text-white/70">
-            Wireframe first, then the inferred colour.
-          </p>
         </div>
-        <div className="grid content-start gap-3">
-          {selected ? (
-            <Card label="Inspector">
-              <p className="text-lg">{selected.name}</p>
-              <div className="mt-3">
-                <ConfidenceChip level={selected.confidence} pulse={pulse} />
-              </div>
-              <div className="mt-4 flex gap-2">
-                {(['low', 'medium', 'high'] as Confidence[]).map((level) => (
-                  <Button
-                    key={level}
-                    size="sm"
-                    variant={selected.confidence === level ? 'primary' : 'secondary'}
-                    onClick={() => {
-                      const ok = setConfidenceLevel(selected.id, level)
-                      if (ok) setPulse((value) => value + 1)
-                    }}
-                  >
-                    {level}
-                  </Button>
-                ))}
-              </div>
-              {ui.confidenceError ? (
-                <div className="mt-3">
-                  <Notice>{ui.confidenceError}</Notice>
-                </div>
-              ) : null}
-              <div className="mt-4">
-                <Field
-                  label="Rationale"
-                  textarea
-                  value={selected.rationale}
-                  onChange={(rationale) => updateElement(selected.id, { rationale })}
-                />
-              </div>
-              <div className="mt-4">
-                <SectionLabel>Linked sources</SectionLabel>
-                {sources.length === 0 ? <p className="mt-2 text-[13px] text-text-2">None linked.</p> : null}
-                {sources.map((source) => (
-                  <p key={source.id} className="mt-2 text-[13px]">
-                    {source.title}
-                  </p>
-                ))}
-                {bundle.evidence
-                  .filter((item) => !sources.some((source) => source.id === item.id))
-                  .map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className="mt-2 block text-left text-[13px] underline"
-                      onClick={() => linkEvidence(selected.id, item.id)}
-                    >
-                      Link {item.title}
-                    </button>
-                  ))}
-              </div>
-            </Card>
-          ) : (
-            <Card>
-              <p>Select an element, or add one to the drawing.</p>
-            </Card>
-          )}
-          <Card label="Then / now">
-            <input
-              aria-label="Then and now"
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={ui.thenNow}
-              onChange={(event) => setThenNow(Number(event.target.value))}
-              className="w-full"
-            />
-            <button type="button" className="mt-3 text-[13px] underline" onClick={() => setShowColours(!ui.showColours)}>
-              {ui.showColours ? 'Confidence colours on' : 'Confidence colours off'}
-            </button>
-          </Card>
+        <p className="mt-6 text-[12px] text-text-3">{bundle.elements.length} elements · {bundle.elements.filter((element) => element.type !== 'group' && !bundle.links.some((link) => link.elementId === element.id)).length} without evidence</p>
+      </section>
+      <section className="relative min-h-[640px] overflow-hidden rounded-[20px] bg-[#e7edf0]">
+        <div className="absolute left-4 top-4 z-10 flex rounded-full bg-white p-1 shadow-card">
+          {(['then', 'now', 'compare'] as const).map((item) => (
+            <button key={item} type="button" onClick={() => { setMode(item); setThenNow(item === 'now' ? 0.15 : 1); setPlayId((value) => value + 1) }} className={`rounded-full px-4 py-1.5 text-[13px] capitalize ${mode === item ? 'bg-primary text-on-primary' : 'text-text-2'}`}>{item}</button>
+          ))}
         </div>
-      </div>
+        <button type="button" onClick={() => setShowColours(!ui.showColours)} className="absolute right-36 top-4 z-10 text-[13px] text-text-2">Confidence colours</button>
+        <a href={`#/v/${bundle.site.slug}/ar/roof?preview=1`} className="absolute right-4 top-4 z-10 rounded-full bg-white px-3 py-1.5 text-[12px] shadow-card">AR preview</a>
+        <CaveElevation elements={bundle.elements} selectedId={selected?.id} thenNow={shown} showColours={ui.showColours} playId={playId} onSelect={selectElement} />
+        <p className="absolute bottom-4 left-0 right-0 text-center text-[12px] text-text-3">Wireframe first, then the inferred colour · placeholder geometry</p>
+      </section>
+      <aside className="grid content-start gap-3">
+        <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Element</p>
+        {selected ? (
+          <>
+            <div className="rounded-card bg-surface-2 px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Name</p>
+              <p className="text-[18px]">{selected.name}</p>
+            </div>
+            <div className="rounded-card bg-surface-2 px-4 py-3 text-[13px] text-text-2">
+              <p className="text-[11px] uppercase tracking-[0.08em]">Type · period · parent</p>
+              <p className="mt-1 capitalize">{selected.type} · {bundle.site.reconstructionYear} CE · Cave 3</p>
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Confidence</p>
+            <div className="flex gap-2">
+              {(['high', 'medium', 'low'] as Confidence[]).map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => {
+                    const ok = setConfidenceLevel(selected.id, level)
+                    if (ok) setPulse((value) => value + 1)
+                  }}
+                  className={`rounded-full px-3 py-1 text-[13px] capitalize ${selected.confidence === level ? 'bg-conf-medium-bg text-conf-medium' : 'bg-surface text-text-2'}`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+            {ui.confidenceError ? <Notice>{ui.confidenceError}</Notice> : null}
+            <div className="rounded-card bg-surface p-4 shadow-card">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Why this rating?</p>
+              <textarea className="mt-2 w-full resize-none bg-transparent text-[14px] leading-6 outline-none" rows={4} value={selected.rationale} onChange={(event) => updateElement(selected.id, { rationale: event.target.value })} />
+              <p className="text-[12px] text-text-3">Shown to visitors as a confidence label, not as fact.</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-text-3">Evidence</p>
+              <span className="text-[13px] text-text-2">{sources.length} sources linked</span>
+            </div>
+            {sources.map((source) => (
+              <div key={source.id} className="rounded-card bg-surface px-3 py-3 shadow-card">
+                <p className="text-[14px]">{source.title}</p>
+                <p className="text-[12px] capitalize text-text-3">{source.type} · {source.date}</p>
+              </div>
+            ))}
+            {bundle.evidence.filter((item) => !sources.some((source) => source.id === item.id)).slice(0, 3).map((item) => (
+              <button key={item.id} type="button" className="text-left text-[13px] text-accent" onClick={() => linkEvidence(selected.id, item.id)}>
+                Link {item.title}
+              </button>
+            ))}
+          </>
+        ) : (
+          <p className="text-text-2">Select an element.</p>
+        )}
+      </aside>
       <Modal
         open={adding}
         title="Add an element"

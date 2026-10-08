@@ -1,18 +1,21 @@
 import { motion } from 'framer-motion'
-import { cloneElement, useEffect, useState } from 'react'
-import type { ReactElement } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import type { Confidence, Element } from '../store/types'
 import { prefersReducedMotion } from './ui'
 
-const STONE = '#8d8478'
-const STONE_DARK = '#5c564e'
-const BEIGE = '#d9c7a6'
+function iso(x: number, y: number, z: number): [number, number] {
+  return [330 + (x - y) * 34, 300 + (x + y) * 16 - z * 28]
+}
 
-function confColour(level: Confidence, showColours: boolean) {
-  if (!showColours) return BEIGE
-  if (level === 'high') return '#2E7D4F'
-  if (level === 'medium') return '#B7791F'
-  return '#C0392B'
+function poly(points: Array<[number, number]>) {
+  return points.map(([x, y]) => `${x},${y}`).join(' ')
+}
+
+function colour(level: Confidence, showColours: boolean) {
+  if (!showColours) return '#e7d7a4'
+  if (level === 'high') return '#1f9d55'
+  if (level === 'medium') return '#e0b33a'
+  return '#e22442'
 }
 
 export function CaveElevation({
@@ -39,139 +42,88 @@ export function CaveElevation({
       setRevealed(true)
       return
     }
-    const timer = window.setTimeout(() => setRevealed(true), 1200)
+    const timer = window.setTimeout(() => setRevealed(true), 900)
     return () => window.clearTimeout(timer)
   }, [playId])
 
   const byGeom = (geom: Element['geom']) => elements.find((element) => element.geom === geom && element.visible)
-  const blocks = elements.filter((element) => element.geom === 'block' && element.visible)
   const hasCave = elements.some((element) => element.geom && element.geom !== 'block')
-  const fillOpacity = revealed ? 0.16 + thenNow * 0.5 : 0
+  const fill = revealed ? 0.18 + thenNow * 0.55 : 0
+  const roof = byGeom('roof')
+  const wall = byGeom('northwall')
+  const frieze = byGeom('frieze')
+  const entrance = byGeom('entrance')
 
-  if (!hasCave && blocks.length === 0) {
+  if (!hasCave) {
     return (
-      <div className="flex h-full min-h-[420px] items-center justify-center rounded-card border border-dashed border-white/30 bg-[#241f1b]/80 p-8 text-center text-white/80">
+      <div className="grid h-full min-h-[420px] place-items-center rounded-[16px] bg-[#eef1f3] text-center text-text-2">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.08em] text-white/50">2D reconstruction</p>
-          <p className="mt-2 font-display text-3xl font-light">Empty drawing</p>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-white/70">
-            Add an element. The drawing starts as a wireframe, then the inferred parts fill in.
-          </p>
+          <p className="text-[11px] uppercase tracking-[0.08em]">2D reconstruction</p>
+          <p className="mt-2 text-[18px] text-text-1">Add an element to draw the hall</p>
         </div>
       </div>
     )
   }
 
-  const shape = (element: Element | undefined, node: ReactElement) => {
-    if (!element) return null
-    const selected = element.id === selectedId
-    const colour = confColour(element.confidence, showColours)
-    const outline = cloneElement(node, {
-      fill: 'none',
-      stroke: revealed ? colour : '#ffffff',
-      strokeWidth: selected ? 2.4 : 1.6,
-      strokeDasharray: '7 5',
-    })
-    const filled = cloneElement(node, { stroke: 'none' })
-    return (
-      <g
-        key={element.id}
-        onClick={(event) => {
-          event.stopPropagation()
-          onSelect?.(element.id)
-        }}
-        style={{ cursor: onSelect ? 'pointer' : 'default' }}
-      >
-        <motion.g initial={false} animate={{ opacity: fillOpacity }} transition={{ duration: 0.7 }}>
-          {filled}
-        </motion.g>
-        {outline}
-      </g>
-    )
-  }
+  const floor = [iso(0, 0, 0), iso(8, 0, 0), iso(8, 6, 0), iso(0, 6, 0)]
+  const back = [iso(0, 6, 0), iso(8, 6, 0), iso(8, 6, 3.2), iso(0, 6, 3.2)]
+  const side = [iso(0, 0, 0), iso(0, 6, 0), iso(0, 6, 3.2), iso(0, 0, 3.2)]
+  const front = [iso(8, 0, 0), iso(8, 6, 0), iso(8, 6, 2.4), iso(8, 0, 2.4)]
+  const roofShape = [iso(0, 0, 3.2), iso(8, 0, 3.2), iso(8, 6, 3.2), iso(4, 6, 5.4), iso(4, 0, 5.4), iso(0, 6, 3.2)]
+  const ridge = [iso(4, 0, 5.4), iso(4, 6, 5.4)]
+  const band = [iso(0.3, 6, 2.5), iso(7.7, 6, 2.5), iso(7.7, 6, 2.9), iso(0.3, 6, 2.9)]
+  const green = [iso(0.3, 6, 1.7), iso(7.7, 6, 1.7), iso(7.7, 6, 2.05), iso(0.3, 6, 2.05)]
+  const lintel = [iso(2.2, 0, 2.2), iso(5.8, 0, 2.2), iso(5.8, 0, 2.55), iso(2.2, 0, 2.55)]
+  const label = iso(4, 2, 5.8)
+
+  const hit = (id?: string) => ({
+    onClick: (event: MouseEvent) => {
+      event.stopPropagation()
+      if (id) onSelect?.(id)
+    },
+    style: { cursor: onSelect ? 'pointer' : 'default' },
+  })
 
   return (
-    <svg viewBox="0 0 880 520" className="h-full w-full" role="img" aria-label="Two dimensional reconstruction">
-      <defs>
-        <linearGradient id="stoneGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#6b5d4d" />
-          <stop offset="1" stopColor="#2b2621" />
-        </linearGradient>
-      </defs>
-      {transparent ? null : <rect width="880" height="520" fill="url(#stoneGrad)" />}
-      <text x="36" y="36" fill="white" fillOpacity="0.75" fontSize="11" letterSpacing="1.4">
-        {revealed ? 'RECONSTRUCTION · NOT A FACT' : 'WIREFRAME'}
-      </text>
-
-      {hasCave ? (
-        <g fill="none" stroke={revealed ? STONE : 'white'} strokeWidth="1.6">
-          <rect x="120" y="250" width="70" height="190" fill={revealed ? STONE : 'none'} stroke={STONE_DARK} />
-          <rect x="690" y="250" width="70" height="190" fill={revealed ? STONE : 'none'} stroke={STONE_DARK} />
-          <rect x="190" y="250" width="500" height="175" fill={revealed ? STONE : 'none'} />
-          <rect x="230" y="300" width="36" height="140" fill={revealed ? '#746b60' : 'none'} />
-          <rect x="614" y="300" width="36" height="140" fill={revealed ? '#746b60' : 'none'} />
-          <rect x="120" y="430" width="640" height="28" fill={revealed ? STONE : 'none'} />
-          <rect x="266" y="408" width="348" height="18" fill={revealed ? '#6e655b' : 'none'} />
-          <ellipse cx="440" cy="468" rx="86" ry="16" />
+    <svg viewBox="0 0 660 460" className="h-full w-full" role="img" aria-label="Isometric reconstruction">
+      {transparent ? null : <rect width="660" height="460" fill="#e7edf0" rx="16" />}
+      <polygon points={poly(floor)} fill="#d7d2c8" stroke="#b7b1a6" />
+      <polygon points={poly(side)} fill="#cfc8bc" stroke="#b7b1a6" />
+      <polygon points={poly(back)} fill="#e4dfd6" stroke="#b7b1a6" />
+      <polygon points={poly(front)} fill="#c8c0b4" stroke="#b7b1a6" />
+      {wall ? (
+        <polygon points={poly(green)} fill={colour(wall.confidence, showColours)} opacity={0.9} {...hit(wall.id)} />
+      ) : null}
+      {frieze ? (
+        <polygon points={poly(band)} fill={colour(frieze.confidence, showColours)} opacity={0.85} {...hit(frieze.id)} />
+      ) : null}
+      {entrance ? (
+        <polygon points={poly(lintel)} fill={colour(entrance.confidence, showColours)} opacity={0.8} {...hit(entrance.id)} />
+      ) : null}
+      {roof ? (
+        <g {...hit(roof.id)}>
+          <motion.polygon
+            points={poly([iso(-0.15, 3, 3.35), iso(8.15, 3, 3.35), iso(4, 3, 5.55)])}
+            fill={colour(roof.confidence, showColours)}
+            initial={false}
+            animate={{ opacity: fill }}
+          />
+          <polygon
+            points={poly(roofShape)}
+            fill="none"
+            stroke={revealed ? colour(roof.confidence, showColours) : '#111'}
+            strokeDasharray="7 5"
+            strokeWidth={selectedId === roof.id ? 2.4 : 1.6}
+          />
+          <line x1={ridge[0][0]} y1={ridge[0][1]} x2={ridge[1][0]} y2={ridge[1][1]} stroke={colour(roof.confidence, showColours)} strokeDasharray="6 4" />
+          <g transform={`translate(${label[0] - 54}, ${label[1] - 28})`}>
+            <rect width="108" height="22" rx="11" fill="#fff6df" />
+            <text x="54" y="15" textAnchor="middle" fontSize="10" fill="#8a6410" fontFamily="Inter, sans-serif">
+              ROOF · {roof.confidence.toUpperCase()}
+            </text>
+          </g>
         </g>
       ) : null}
-
-      {shape(
-        byGeom('roof'),
-        <polygon points="160,168 440,48 720,168" fill={confColour(byGeom('roof')!.confidence, showColours)} />,
-      )}
-      {shape(
-        byGeom('northwall'),
-        <rect x="190" y="150" width="500" height="100" fill={confColour(byGeom('northwall')!.confidence, showColours)} />,
-      )}
-      {shape(
-        byGeom('frieze'),
-        <rect x="230" y="248" width="420" height="22" fill={confColour(byGeom('frieze')!.confidence, showColours)} />,
-      )}
-      {shape(
-        byGeom('entrance'),
-        <rect x="266" y="268" width="348" height="26" fill={confColour(byGeom('entrance')!.confidence, showColours)} />,
-      )}
-      {shape(
-        byGeom('cistern'),
-        <ellipse cx="440" cy="452" rx="70" ry="18" fill={confColour(byGeom('cistern')!.confidence, showColours)} />,
-      )}
-
-      {blocks.map((element, index) => (
-        <g key={element.id} onClick={() => onSelect?.(element.id)} style={{ cursor: 'pointer' }}>
-          <motion.rect
-            x={160 + (index % 4) * 150}
-            y={180 + Math.floor(index / 4) * 90}
-            width="120"
-            height="64"
-            rx="8"
-            fill={confColour(element.confidence, showColours)}
-            initial={false}
-            animate={{ opacity: fillOpacity }}
-          />
-          <rect
-            x={160 + (index % 4) * 150}
-            y={180 + Math.floor(index / 4) * 90}
-            width="120"
-            height="64"
-            rx="8"
-            fill="none"
-            stroke="white"
-            strokeDasharray="6 4"
-          />
-          <text x={170 + (index % 4) * 150} y={216 + Math.floor(index / 4) * 90} fill="white" fontSize="12">
-            {element.name}
-          </text>
-        </g>
-      ))}
-
-      <g fill="white" fontSize="12">
-        {byGeom('roof') ? <text x="400" y="110">Roof</text> : null}
-        {byGeom('northwall') ? <text x="390" y="205">North wall</text> : null}
-        {byGeom('frieze') ? <text x="400" y="264">Frieze</text> : null}
-        {byGeom('entrance') ? <text x="400" y="286">Lintel</text> : null}
-        {byGeom('cistern') ? <text x="400" y="456">Cistern</text> : null}
-      </g>
     </svg>
   )
 }

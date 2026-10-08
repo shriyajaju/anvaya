@@ -176,28 +176,32 @@ function Landing({
   onStories: () => void
 }) {
   const focus = view.elements.find((element) => element.geom === 'roof') ?? view.elements.find((element) => element.type !== 'group')
+  const reconstructions = view.elements.filter((element) => element.type !== 'group').length
   return (
-    <div className="flex min-h-full flex-col px-5 pb-8 pt-10">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-white/60">ANVAYA</p>
-      <h1 className="mt-8 font-display text-[40px] font-light leading-[1.1]">{view.siteName}</h1>
-      <p className="mt-3 text-[15px] leading-6 text-white/75">{view.description}</p>
-      <p className="mt-2 text-[13px] text-white/50">
-        {view.location} · c. {view.year} · reconstruction, not a fact
-      </p>
-      {focus ? (
-        <button type="button" onClick={() => onOpen(focus.id)} className="mt-8 h-[52px] rounded-btn bg-white text-[11px] font-medium uppercase tracking-[0.08em] text-black">
-          See the reconstruction
-        </button>
-      ) : (
-        <p className="mt-8 text-white/70">This published snapshot has no reconstructed elements.</p>
-      )}
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button type="button" onClick={onStories} className="h-12 rounded-full bg-white/10 text-[13px] backdrop-blur">
-          Stories
-        </button>
-        <button type="button" onClick={onAbout} className="h-12 rounded-full bg-white/10 text-[13px] backdrop-blur">
-          About
-        </button>
+    <div className="flex min-h-full flex-col justify-between bg-gradient-to-b from-[#4a4238] via-[#1c1c1c] to-[#1c1c1c] px-6 pb-8 pt-14 text-white">
+      <div className="mx-auto rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.08em] backdrop-blur">
+        {view.siteName} · Entrance
+      </div>
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.08em] text-white/60">ANVAYA</p>
+        <h1 className="mt-2 font-display text-[40px] font-normal leading-[48px]">{view.siteName}</h1>
+        <p className="mt-2 text-[15px] leading-6">See what remains. Discover what once was.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.08em]">{reconstructions} reconstructions</span>
+          <button type="button" onClick={onStories} className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.08em]">
+            {view.stories.length} {view.stories.length === 1 ? 'story' : 'stories'}
+          </button>
+          <button type="button" onClick={onAbout} className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.08em]">
+            4 min
+          </button>
+        </div>
+        <p className="mt-4 text-[13px] leading-5 text-white/75">Reconstructions show how the site may have looked. We tell you how sure we are.</p>
+        {focus ? (
+          <button type="button" onClick={() => onOpen(focus.id)} className="mt-4 h-12 w-full rounded-card bg-white text-[11px] font-medium uppercase tracking-[0.08em] text-black">
+            Begin exploring
+          </button>
+        ) : null}
+        <p className="mt-2 text-center text-[13px] text-white/50">Works in your browser · No download</p>
       </div>
     </div>
   )

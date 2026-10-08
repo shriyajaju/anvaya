@@ -2,10 +2,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
   Archive,
   BarChart3,
+  ChevronDown,
   ClipboardCheck,
+  Folder,
   Home,
-  Image,
-  Landmark,
+  Layers,
   Moon,
   Settings,
   Sun,
@@ -20,12 +21,11 @@ import type { Role } from '../store/types'
 
 const rail = [
   { to: '/studio', icon: Home, label: 'Home', end: true },
-  { to: '/studio/sites', icon: Landmark, label: 'Sites' },
+  { to: '/studio/sites', icon: Layers, label: 'Sites' },
+  { to: '/studio/assets', icon: Folder, label: 'Assets' },
   { to: '/studio/review-queue', icon: ClipboardCheck, label: 'Review' },
   { to: '/studio/archive', icon: Archive, label: 'Archive' },
-  { to: '/studio/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/studio/assets', icon: Image, label: 'Assets' },
-  { to: '/studio/settings', icon: Settings, label: 'Settings' },
+  { to: '/studio/analytics', icon: BarChart3, label: 'Analytics', end: false },
 ]
 
 export function Shell() {
@@ -41,27 +41,46 @@ export function Shell() {
 
   return (
     <div className="min-h-screen bg-page text-text-1">
-      <aside className="fixed bottom-4 left-4 right-4 z-40 flex h-16 items-center justify-between rounded-[40px] bg-surface px-3 shadow-card min-[1100px]:bottom-6 min-[1100px]:left-6 min-[1100px]:right-auto min-[1100px]:top-6 min-[1100px]:h-auto min-[1100px]:w-[72px] min-[1100px]:flex-col min-[1100px]:py-3 dark:border dark:border-line">
-        <div className="flex items-center gap-1 min-[1100px]:flex-col">
-          <div className="grid h-10 w-10 place-items-center text-sm font-medium">A</div>
-          {rail.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              aria-label={item.label}
-              className={({ isActive }) =>
-                `relative grid h-10 w-10 place-items-center rounded-full ${isActive ? 'bg-primary text-on-primary' : 'text-text-2'}`
-              }
-            >
-              <item.icon size={18} />
-              {item.label === 'Review' && reviews > 0 ? (
-                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-review" />
-              ) : null}
-            </NavLink>
-          ))}
+      <aside className="fixed bottom-4 left-4 right-4 z-40 flex h-16 items-center justify-between rounded-[40px] bg-surface px-3 shadow-card min-[1100px]:bottom-6 min-[1100px]:left-6 min-[1100px]:right-auto min-[1100px]:top-6 min-[1100px]:h-[calc(100vh-48px)] min-[1100px]:w-[72px] min-[1100px]:flex-col min-[1100px]:justify-between min-[1100px]:py-5 dark:border dark:border-line">
+        <div className="flex items-center gap-1 min-[1100px]:flex-col min-[1100px]:gap-10">
+          <AccountMenu />
+          <div className="flex items-center gap-1 min-[1100px]:flex-col min-[1100px]:gap-1">
+            {rail.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                aria-label={item.label}
+                className={({ isActive }) =>
+                  `relative grid h-14 w-14 place-items-center rounded-2xl ${isActive ? 'text-text-1' : 'text-text-3'}`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive ? <span className="absolute -left-2 hidden h-6 w-0.5 rounded-full bg-primary min-[1100px]:block" /> : null}
+                    <item.icon size={20} strokeWidth={1.75} />
+                    {item.label === 'Review' && reviews > 0 ? (
+                      <span className="absolute right-3 top-3 h-1.5 w-1.5 rounded-full bg-review" />
+                    ) : null}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </div>
-        <AccountMenu />
+        <div className="flex items-center gap-1 min-[1100px]:flex-col">
+          <button
+            type="button"
+            aria-label="Toggle theme"
+            className="grid h-14 w-14 place-items-center text-text-3"
+            onClick={() => useAnvaya.getState().setTheme(ui.theme === 'dark' ? 'light' : 'dark')}
+          >
+            <Moon size={20} strokeWidth={1.75} />
+          </button>
+          <NavLink to="/studio/settings" aria-label="Settings" className="grid h-14 w-14 place-items-center text-text-3">
+            <Settings size={20} strokeWidth={1.75} />
+          </NavLink>
+        </div>
       </aside>
       <div className="px-4 pb-24 pt-4 min-[1100px]:pb-6 min-[1100px]:pl-[120px] min-[1100px]:pr-6">
         <AnimatePresence mode="wait">
@@ -172,7 +191,7 @@ export function PreviewPanel({ caption }: { caption?: string }) {
       <div className="flex h-full flex-col bg-[radial-gradient(circle_at_30%_20%,#6b5d4d,#2b2621_55%,#171412)] p-6">
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-white/15 px-4 py-2 text-[13px] text-white backdrop-blur">
-            anvaya.app/v/{bundle.site.slug}
+            anvaya.site/{bundle.site.slug}
           </span>
           <button
             type="button"
@@ -183,10 +202,10 @@ export function PreviewPanel({ caption }: { caption?: string }) {
             {theme ? <Moon size={16} /> : <Sun size={16} />}
           </button>
           <a
-            className="rounded-btn bg-white px-4 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-black"
+            className="grid h-12 w-[140px] place-items-center rounded-btn bg-white text-[11px] font-medium uppercase tracking-[0.08em] text-[#111]"
             href={`#/v/${bundle.site.slug}?preview=1`}
           >
-            Open
+            Open {bundle.site.name.split(' ')[0]}
           </a>
         </div>
         <div className="grid flex-1 place-items-center">
@@ -201,7 +220,7 @@ export function PreviewPanel({ caption }: { caption?: string }) {
             ) : null}
           </div>
         </div>
-        <p className="text-[13px] text-white/70">{caption ?? 'Visitor preview of the working copy'}</p>
+        <p className="text-[13px] text-white/70">{caption ?? `Version ${bundle.versions.at(-1)?.number ?? '—'} · ${bundle.site.status === 'published' ? 'Published' : 'Draft'}`}</p>
       </div>
     </aside>
   )
@@ -218,8 +237,8 @@ export function SiteFrame({ children, wide = false }: { children: ReactNode; wid
   const steps = ['overview', 'document', 'evidence', 'timeline', 'reconstruct', 'stories', 'review', 'publish', 'archive']
   return (
     <div>
-      <header className="mb-6 flex h-[88px] items-center gap-4">
-        <label className="rounded-full bg-surface px-4 py-2 text-sm shadow-card">
+      <header className="mb-8 flex h-12 items-center gap-3">
+        <label className="flex h-10 items-center gap-2 rounded-full bg-surface-2 px-4 text-[14px]">
           <span className="sr-only">Site</span>
           <select
             className="bg-transparent outline-none"
@@ -232,28 +251,32 @@ export function SiteFrame({ children, wide = false }: { children: ReactNode; wid
               </option>
             ))}
           </select>
+          <ChevronDown size={14} className="text-text-3" />
         </label>
-        <nav className="hidden flex-1 justify-center gap-1 lg:flex">
-          {steps.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => navigate(`/studio/site/${item}`)}
-              className="relative rounded-full px-3 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-text-2"
-            >
-              {step === item ? (
-                <motion.span layoutId="step-pill" className="absolute inset-0 rounded-full bg-surface shadow-card" />
-              ) : null}
-              <span className={`relative ${step === item ? 'text-text-1' : ''}`}>{item}</span>
-            </button>
-          ))}
+        <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
+          {steps.map((item) => {
+            const active = step === item
+            const label = item[0].toUpperCase() + item.slice(1)
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => navigate(`/studio/site/${item}`)}
+                className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[14px] ${active ? 'text-white' : 'text-text-2'}`}
+              >
+                {active ? <motion.span layoutId="step-pill" className="absolute inset-0 rounded-full bg-primary" /> : null}
+                <span className={`relative ${active ? '' : 'text-conf-high'}`}>•</span>
+                <span className="relative">{label}</span>
+              </button>
+            )
+          })}
         </nav>
         <button
           type="button"
-          className="ml-auto rounded-btn bg-primary px-4 py-3 text-[11px] font-medium uppercase tracking-[0.08em] text-on-primary"
-          onClick={() => toast('Working copy updated')}
+          className="ml-auto h-10 rounded-btn bg-primary px-4 text-[11px] font-medium uppercase tracking-[0.08em] text-on-primary"
+          onClick={() => (step === 'overview' ? toast('Share link copied') : toast('Working copy updated'))}
         >
-          Update
+          {step === 'overview' ? 'Share' : 'Update'}
         </button>
       </header>
       {wide ? (
