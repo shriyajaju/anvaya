@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background: var(--color-page);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    transition:
+      background-color 200ms,
+      color 200ms;
+  }
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-page);
+  color: var(--color-text-1);
+}

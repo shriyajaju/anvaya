@@ -1,24 +1,37 @@
-# Logs
+# dependencies
+node_modules
+.pnpm-store
+
+# next
+.next
+out
+
+# env
+.env
+.env*.local
+
+# debug / logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
+# test
+coverage
+playwright-report
+test-results
+blob-report
+
+# typescript
+*.tsbuildinfo
+
+# misc
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
 dist
 dist-ssr
 *.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?

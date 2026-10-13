@@ -1,0 +1,163 @@
+/*
+ * ANVAYA tokens from Figma variables on the Components page (node 63:2).
+ * Shadow/Floating has no dark mode in the file; the dark value is the §3 fallback.
+ */
+
+:root,
+[data-theme="light"] {
+  --color-page: #f6f6f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #e2e6e9;
+  --color-border: #e2e6e9;
+  --color-text-1: #111111;
+  --color-text-2: #778188;
+  --color-text-3: #919aa1;
+  --color-primary: #000000;
+  --color-on-primary: #ffffff;
+  --color-accent: #0f7366;
+  --color-accent-bg: #eef1e6;
+  --color-conf-high: #149020;
+  --color-conf-high-bg: #f0faef;
+  --color-conf-medium: #c8981b;
+  --color-conf-medium-bg: #fff1d3;
+  --color-conf-low: #e22442;
+  --color-conf-low-bg: #fbe5e1;
+  --color-review: #0d68e0;
+  --color-review-bg: #edf4ff;
+  --shadow-card: 0 8px 32px #0000000f;
+  --shadow-float: 0 16px 48px #0000001f;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --color-page: #1c1c1c;
+  --color-surface: #262626;
+  --color-surface-2: #2f2f2f;
+  --color-border: #353535;
+  --color-text-1: #f5f5f5;
+  --color-text-2: #919aa1;
+  --color-text-3: #778188;
+  --color-primary: #ffffff;
+  --color-on-primary: #000000;
+  --color-accent: #8dca09;
+  --color-accent-bg: #2a3120;
+  --color-conf-high: #149020;
+  --color-conf-high-bg: #1f3a2b;
+  --color-conf-medium: #c8981b;
+  --color-conf-medium-bg: #3a2e14;
+  --color-conf-low: #e22442;
+  --color-conf-low-bg: #3f1f1b;
+  --color-review: #0d68e0;
+  --color-review-bg: #1e2a47;
+  --shadow-card: 0 8px 32px #00000066;
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-page: #1c1c1c;
+    --color-surface: #262626;
+    --color-surface-2: #2f2f2f;
+    --color-border: #353535;
+    --color-text-1: #f5f5f5;
+    --color-text-2: #919aa1;
+    --color-text-3: #778188;
+    --color-primary: #ffffff;
+    --color-on-primary: #000000;
+    --color-accent: #8dca09;
+    --color-accent-bg: #2a3120;
+    --color-conf-high: #149020;
+    --color-conf-high-bg: #1f3a2b;
+    --color-conf-medium: #c8981b;
+    --color-conf-medium-bg: #3a2e14;
+    --color-conf-low: #e22442;
+    --color-conf-low-bg: #3f1f1b;
+    --color-review: #0d68e0;
+    --color-review-bg: #1e2a47;
+    --shadow-card: 0 8px 32px #00000066;
+    --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root {
+  --color-conf-high-glass: #a0de9e;
+  --color-conf-medium-glass: #f1c26b;
+  --color-conf-low-glass: #ffa5a4;
+  --color-glass-camera: #000000;
+  --color-glass-url: #ffffff;
+  --color-glass-control: #ffffff;
+  --color-glass-border: #ffffff;
+  --color-glass-caption: #ffffff;
+  --color-overlay: #000000;
+  --color-visitor-glass: #ffffff;
+  --color-visitor-glass-border: #000000;
+  --color-visitor-slider: #000000;
+  --color-visitor-text-60: #ffffff;
+  --color-visitor-text-75: #ffffff;
+  --color-visitor-text-50: #ffffff;
+  --color-visitor-text-25: #ffffff;
+
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-pill: 999px;
+  --radius-sheet: 32px;
+  --radius-phone: 32px;
+  --radius-bar: 4px;
+  --radius-rail-item: 16px;
+  --radius-rail: 40px;
+  --radius-modal: 16px;
+  --radius-icon-tile: 10px;
+  --radius-visitor-card: 16px;
+  --radius-zero: 0px;
+
+  --shadow-phone: 0 30px 80px #00000080;
+  --shadow-sheet: 0 -12px 40px #0000004d;
+  --blur-glass: 16px;
+  --blur-preview: 30px;
+
+  --space-0: 0px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-34: 34px;
+  --space-48: 48px;
+
+  --text-display-size: 40px;
+  --text-display-line: 48px;
+  --text-display-weight: 300;
+  --text-h1-size: 32px;
+  --text-h1-line: 40px;
+  --text-h1-weight: 400;
+  --text-h2-size: 24px;
+  --text-h2-line: 32px;
+  --text-h2-weight: 500;
+  --text-h3-size: 18px;
+  --text-h3-line: 26px;
+  --text-h3-weight: 500;
+  --text-body-size: 15px;
+  --text-body-line: 24px;
+  --text-body-weight: 400;
+  --text-small-size: 13px;
+  --text-small-line: 20px;
+  --text-small-weight: 400;
+  --text-label-size: 11px;
+  --text-label-line: 16px;
+  --text-label-weight: 500;
+  --text-label-tracking: 0.08em;
+  --text-visitor-title-size: 28px;
+  --text-visitor-title-line: 34px;
+  --text-visitor-title-weight: 400;
+
+  --font-sans: var(--font-inter), "Inter", sans-serif;
+  --font-visitor: var(--font-playfair), "Playfair Display", serif;
+}
