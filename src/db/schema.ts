@@ -1,2 +1,2 @@
-// Tables are added in T1. Drizzle needs a schema module to point at.
-export {};
+export * from "../../drizzle/schema";
+export * from "../../drizzle/relations";
