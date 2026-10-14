@@ -4,6 +4,7 @@ import { OverviewBoard } from "@/components/studio/overview-board";
 import { PlaceholderCards } from "@/components/studio/placeholder-cards";
 import { TimelineBoard } from "@/components/studio/timeline-board";
 import { ReconstructBoard } from "@/components/studio/reconstruct-board";
+import { ReviewBoard } from "@/components/studio/review-board";
 import { StoriesBoard } from "@/components/studio/stories-board";
 import { getSession } from "@/lib/auth/session";
 import { signPreviewToken } from "@/lib/preview-token";
@@ -11,6 +12,7 @@ import { SITE_STEPS, WIDE_STEPS, isSiteStep } from "@/lib/studio/steps";
 import { getOrgSite, stepStatusForSite } from "@/server/studio";
 import { evidenceForSite, type SourceKind } from "@/server/evidence-data";
 import { reconstructForSite } from "@/server/reconstruct-data";
+import { reviewForSite } from "@/server/review-data";
 import { storiesForSite } from "@/server/stories-data";
 import { documentForSite, overviewForSite } from "@/server/workspace";
 import { notFound, redirect } from "next/navigation";
@@ -42,6 +44,20 @@ export default async function SiteStepPage({
   if (step === "reconstruct") {
     const data = await reconstructForSite(site.id, slug, signPreviewToken({ slug: site.slug, siteId: site.id }));
     return <ReconstructBoard data={data} />;
+  }
+  if (step === "review") {
+    const data = await reviewForSite(site.id, slug);
+    return (
+      <ReviewBoard
+        siteId={site.id}
+        slug={slug}
+        roleIsCreator={data.roleIsCreator}
+        reviewerName={data.reviewerName}
+        diff={data.diff}
+        checklist={data.checklist}
+        review={data.review}
+      />
+    );
   }
   if (step === "stories") {
     const query = await searchParams;

@@ -18,6 +18,7 @@ export function Pill({
   chevron = false,
   switcher = false,
   className = "",
+  onClick,
 }: {
   label: string;
   state?: PillState;
@@ -28,6 +29,7 @@ export function Pill({
   chevron?: boolean;
   switcher?: boolean;
   className?: string;
+  onClick?: () => void;
 }) {
   const motionEnabled = useMotionEnabled();
   const selected = state === "Selected";
@@ -37,6 +39,7 @@ export function Pill({
       type="button"
       whileTap={motionEnabled ? { scale: 0.98 } : undefined}
       transition={spring}
+      onClick={onClick}
       className={`${focusRing} inline-flex items-center gap-2 rounded-pill font-medium leading-6 ${height} ${
         selected ? "bg-primary text-on-primary" : "bg-surface-2 text-text-2"
       } ${switcher ? "shadow-card" : ""} ${className}`}
