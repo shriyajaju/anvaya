@@ -12,7 +12,7 @@ export const SITE_STEPS = [
 
 export type SiteStepId = (typeof SITE_STEPS)[number]["id"];
 
-export const WIDE_STEPS: readonly SiteStepId[] = ["reconstruct", "archive"];
+export const WIDE_STEPS: readonly SiteStepId[] = ["reconstruct"];
 
 export function isSiteStep(value: string): value is SiteStepId {
   return SITE_STEPS.some((step) => step.id === value);

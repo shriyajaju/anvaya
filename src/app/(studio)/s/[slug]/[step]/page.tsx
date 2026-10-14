@@ -4,6 +4,8 @@ import { OverviewBoard } from "@/components/studio/overview-board";
 import { PlaceholderCards } from "@/components/studio/placeholder-cards";
 import { TimelineBoard } from "@/components/studio/timeline-board";
 import { ReconstructBoard } from "@/components/studio/reconstruct-board";
+import { ArchiveBoard } from "@/components/studio/archive-board";
+import { PublishBoard } from "@/components/studio/publish-board";
 import { ReviewBoard } from "@/components/studio/review-board";
 import { StoriesBoard } from "@/components/studio/stories-board";
 import { getSession } from "@/lib/auth/session";
@@ -12,6 +14,7 @@ import { SITE_STEPS, WIDE_STEPS, isSiteStep } from "@/lib/studio/steps";
 import { getOrgSite, stepStatusForSite } from "@/server/studio";
 import { evidenceForSite, type SourceKind } from "@/server/evidence-data";
 import { reconstructForSite } from "@/server/reconstruct-data";
+import { compareVersions, publishPage, versionsForSite } from "@/server/publish-data";
 import { reviewForSite } from "@/server/review-data";
 import { storiesForSite } from "@/server/stories-data";
 import { documentForSite, overviewForSite } from "@/server/workspace";
@@ -22,7 +25,7 @@ export default async function SiteStepPage({
   searchParams,
 }: Readonly<{
   params: Promise<{ slug: string; step: string }>;
-  searchParams: Promise<{ kind?: string; story?: string }>;
+  searchParams: Promise<{ kind?: string; story?: string; published?: string; left?: string; right?: string }>;
 }>) {
   const { slug, step } = await params;
   if (!isSiteStep(step)) notFound();
@@ -44,6 +47,18 @@ export default async function SiteStepPage({
   if (step === "reconstruct") {
     const data = await reconstructForSite(site.id, slug, signPreviewToken({ slug: site.slug, siteId: site.id }));
     return <ReconstructBoard data={data} />;
+  }
+  if (step === "publish") {
+    const query = await searchParams;
+    const data = await publishPage(site.id, slug, session.role, signPreviewToken({ slug: site.slug, siteId: site.id }));
+    return <PublishBoard data={data} published={query.published} />;
+  }
+  if (step === "archive") {
+    const query = await searchParams;
+    const versions = await versionsForSite(site.id, slug, site.name);
+    const compare =
+      query.left && query.right ? { ...(await compareVersions(site.id, query.left, query.right)), slug } : null;
+    return <ArchiveBoard title="Archive" versions={versions} compare={compare} />;
   }
   if (step === "review") {
     const data = await reviewForSite(site.id, slug);

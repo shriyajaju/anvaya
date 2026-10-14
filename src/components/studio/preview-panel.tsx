@@ -20,6 +20,7 @@ export function PreviewPanel({
   watermark = true,
   stats,
   address,
+  ribbon,
 }: {
   slug: string;
   name: string;
@@ -34,6 +35,7 @@ export function PreviewPanel({
   watermark?: boolean;
   stats?: { elements: number; sources: number; stories: number };
   address?: string;
+  ribbon?: string[];
 }) {
   const [dark, setDark] = useState(true);
   const openHref = `/${slug}${address ? `/${address}` : ""}?preview=${encodeURIComponent(previewToken)}`;
@@ -53,7 +55,7 @@ export function PreviewPanel({
             rel="noreferrer"
             className={`${focusRing} inline-flex h-10 items-center rounded-button bg-primary px-[18px] text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-on-primary`}
           >
-            Open {openLabel}
+            {openLabel === "Preview" ? "Preview" : `Open ${openLabel}`}
           </a>
         </div>
       </div>
@@ -75,8 +77,19 @@ export function PreviewPanel({
           </PhoneFrame>
         )}
       </div>
-      {caption ? (
-        <p className="mt-4 text-[13px] leading-5 text-[color:var(--color-glass-caption)] opacity-70">{caption}</p>
+      {caption || ribbon ? (
+        <div className="mt-4 flex items-center justify-between gap-3">
+          {caption ? <p className="text-[13px] leading-5 text-[color:var(--color-glass-caption)] opacity-70">{caption}</p> : <span />}
+          {ribbon ? (
+            <span className="inline-flex overflow-hidden rounded-pill border border-white/20 text-[11px] text-[color:var(--color-glass-caption)]">
+              {ribbon.map((year) => (
+                <span key={year} className="px-2.5 py-1">
+                  {year}
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

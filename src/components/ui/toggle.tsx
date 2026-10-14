@@ -7,10 +7,12 @@ export function Toggle({
   state = false,
   onStateChange,
   label,
+  disabled = false,
 }: {
   state?: boolean;
   onStateChange?: (next: boolean) => void;
   label: string;
+  disabled?: boolean;
 }) {
   const motionEnabled = useMotionEnabled();
   return (
@@ -19,7 +21,10 @@ export function Toggle({
       role="switch"
       aria-checked={state}
       aria-label={label}
-      onClick={() => onStateChange?.(!state)}
+      disabled={disabled}
+      onClick={() => {
+        if (!disabled) onStateChange?.(!state);
+      }}
       className={`${focusRing} relative h-6 w-11 rounded-pill ${state ? "bg-primary" : "bg-surface-2"}`}
     >
       <motion.span

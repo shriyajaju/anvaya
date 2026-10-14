@@ -78,7 +78,11 @@ function SiteFrameBody({
   const search = useSearchParams();
   const segment = pathname.split("/").filter(Boolean).at(-1) ?? "overview";
   const step: SiteStepId = isSiteStep(segment) ? segment : "overview";
-  const wide = WIDE_STEPS.includes(step) || (step === "stories" && Boolean(search.get("story")));
+  const wide =
+    WIDE_STEPS.includes(step) ||
+    (step === "stories" && Boolean(search.get("story"))) ||
+    (step === "archive" && Boolean(search.get("left"))) ||
+    (step === "publish" && Boolean(search.get("published")));
 
   return (
     <div className="min-h-screen">
@@ -127,9 +131,10 @@ function SiteFrameBody({
                 location={location}
                 revision={revision}
                 previewToken={previewToken}
-                caption={step === "overview" ? caption : undefined}
-                openLabel={name}
+                caption={step === "overview" ? caption : step === "archive" ? "Long-term record" : undefined}
+                openLabel={step === "publish" ? "Preview" : name}
                 address={step === "stories" ? "stories" : undefined}
+                ribbon={step === "archive" ? ["2026", "2036", "2056"] : undefined}
               />
             )}
             </div>

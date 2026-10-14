@@ -19,6 +19,7 @@ export function SceneBuilder({
   colours,
   thenNow,
   onTransform,
+  readOnly = false,
 }: {
   elements: SceneElement[];
   selectedId: string | null;
@@ -27,6 +28,7 @@ export function SceneBuilder({
   colours: boolean;
   thenNow: "then" | "now" | "compare";
   onTransform: (id: string, transform: SceneTransform) => void;
+  readOnly?: boolean;
 }) {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const opacityRef = useRef(1);
@@ -64,10 +66,11 @@ export function SceneBuilder({
               opacityRef={opacityRef}
               onSelect={() => onSelect(element.id)}
               onTransform={(transform) => onTransform(element.id, transform)}
+              readOnly={readOnly}
             />
           ))}
         </Suspense>
-        <OrbitControls makeDefault enableDamping />
+        <OrbitControls makeDefault enableDamping autoRotate={readOnly} autoRotateSpeed={0.6} enablePan={!readOnly} />
       </Canvas>
     </div>
   );
@@ -96,6 +99,7 @@ function ElementMesh({
   opacityRef,
   onSelect,
   onTransform,
+  readOnly = false,
 }: {
   element: SceneElement;
   index: number;
@@ -106,6 +110,7 @@ function ElementMesh({
   opacityRef: MutableRefObject<number>;
   onSelect: () => void;
   onTransform: (transform: SceneTransform) => void;
+  readOnly?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const fallback: [number, number, number] = [(index - (count - 1) / 2) * 1.6, 0.2, 0];
@@ -131,6 +136,7 @@ function ElementMesh({
       rotation={rotation}
       scale={scale}
       onClick={(event) => {
+        if (readOnly) return;
         event.stopPropagation();
         onSelect();
       }}
@@ -152,7 +158,7 @@ function ElementMesh({
     </group>
   );
 
-  if (!selected || mode === "orbit") return body;
+  if (readOnly || !selected || mode === "orbit") return body;
   return (
     <TransformControls mode={mode} onMouseUp={release}>
       {body}
