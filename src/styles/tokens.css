@@ -87,6 +87,11 @@
   --color-conf-low-glass: #ffa5a4;
   --color-glass-camera: #000000;
   --color-glass-url: #ffffff;
+  --color-glass-url-text: #111111;
+  --color-preview-from: #c4a48a;
+  --color-preview-via: #6a5346;
+  --color-preview-to: #241d19;
+  --color-phone: #171715;
   --color-glass-control: #ffffff;
   --color-glass-border: #ffffff;
   --color-glass-caption: #ffffff;

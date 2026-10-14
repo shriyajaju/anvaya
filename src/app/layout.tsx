@@ -24,8 +24,10 @@ export const metadata: Metadata = {
 
 const themeBoot = `
 try {
+  var stored = localStorage.getItem("anvaya-theme");
   var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  var theme = stored === "light" || stored === "dark" ? stored : (dark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
 } catch (e) {}
 `;
 

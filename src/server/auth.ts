@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth/account";
 import { getSession } from "@/lib/auth/session";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -129,6 +130,7 @@ export async function switchOrganisation(formData: FormData) {
   const membership = session.organisations.find((item) => item.orgId === orgId);
   if (!membership) return;
   await setCurrentOrg(orgId);
+  revalidatePath("/", "layout");
 }
 
 export async function createOrganisation(formData: FormData) {
