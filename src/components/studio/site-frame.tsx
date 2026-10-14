@@ -1,5 +1,6 @@
 "use client";
 
+import { EvidenceMap } from "@/components/studio/evidence-map";
 import { MapCard } from "@/components/studio/map-card";
 import { PreviewPanel } from "@/components/studio/preview-panel";
 import { RouteTransition } from "@/components/studio/route-transition";
@@ -72,7 +73,7 @@ function SiteFrameBody({
   complete: Record<SiteStepId, boolean>;
   children: ReactNode;
 }) {
-  const { pins, caption, timelineView } = useWorkspace();
+  const { pins, caption, timelineView, evidenceView } = useWorkspace();
   const pathname = usePathname();
   const segment = pathname.split("/").filter(Boolean).at(-1) ?? "overview";
   const step: SiteStepId = isSiteStep(segment) ? segment : "overview";
@@ -94,7 +95,18 @@ function SiteFrameBody({
         {wide ? null : (
           <div className="hidden min-[1100px]:block">
             <div className="sticky top-0 h-[calc(100vh-72px)] pb-6">
-              {step === "document" ? (
+              {step === "evidence" && evidenceView !== "interpretations" ? (
+              <PreviewPanel
+                slug={slug}
+                name={name}
+                location={location}
+                revision={revision}
+                previewToken={previewToken}
+                mode="map"
+                openLabel={name}
+                map={<EvidenceMap slug={slug} />}
+              />
+            ) : step === "document" ? (
               <PreviewPanel
                 slug={slug}
                 name={name}

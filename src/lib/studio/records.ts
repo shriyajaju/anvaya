@@ -121,6 +121,17 @@ export function yearLabel(year: number | null, approx = false) {
   return approx ? `c. ${era(year)}` : era(year);
 }
 
+export type EvidencePin = {
+  id: string;
+  name: string;
+  planX: number | null;
+  planY: number | null;
+  confidence: "high" | "medium" | "low";
+  sources: number;
+};
+
+export type EvidenceView = "sources" | "questions" | "interpretations" | "confidence";
+
 export function activityLine(item: ActivityItem) {
   const then = new Date(item.at).getTime();
   const hours = Math.max(0, Math.round((Date.now() - then) / 36e5));
