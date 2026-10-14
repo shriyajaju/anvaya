@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, profiles, sites, versions, organisations, periods, events, assets, elements, locations, evidence, questions, interpretations, comments, stories, storySteps, condition, measurements, reviews, reviewItems, analyticsEvents, feedback, elementEvidence, orgMembers } from "./schema";
+import { usersInAuth, profiles, sites, versions, organisations, periods, events, assets, elements, locations, evidence, questions, interpretations, comments, stories, storySteps, condition, measurements, reviews, reviewItems, analyticsEvents, feedback, elementEvidence, orgMembers, orgInvites } from "./schema";
 
 export const profilesRelations = relations(profiles, ({one, many}) => ({
 	usersInAuth: one(usersInAuth, {
@@ -79,6 +79,7 @@ export const versionsRelations = relations(versions, ({one, many}) => ({
 export const organisationsRelations = relations(organisations, ({many}) => ({
 	sites: many(sites),
 	orgMembers: many(orgMembers),
+	orgInvites: many(orgInvites),
 }));
 
 export const periodsRelations = relations(periods, ({one, many}) => ({
@@ -322,6 +323,17 @@ export const elementEvidenceRelations = relations(elementEvidence, ({one}) => ({
 	evidence: one(evidence, {
 		fields: [elementEvidence.evidenceId],
 		references: [evidence.id]
+	}),
+}));
+
+export const orgInvitesRelations = relations(orgInvites, ({one}) => ({
+	organisation: one(organisations, {
+		fields: [orgInvites.orgId],
+		references: [organisations.id]
+	}),
+	profile: one(profiles, {
+		fields: [orgInvites.invitedBy],
+		references: [profiles.id]
 	}),
 }));
 

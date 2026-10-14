@@ -45,6 +45,7 @@ export const organisations = pgTable("organisations", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	name: text().notNull(),
 	slug: text().notNull(),
+	kind: text(),
 }, (table) => [
 	unique("organisations_slug_key").on(table.slug),
 	pgPolicy("organisations_update", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(private.org_role(id) = ANY (ARRAY['admin'::org_role, 'owner'::org_role]))`, withCheck: sql`(private.org_role(id) = ANY (ARRAY['admin'::org_role, 'owner'::org_role]))`  }),
@@ -657,6 +658,31 @@ export const elementEvidence = pgTable("element_evidence", {
   WHERE ((e.id = element_evidence.element_id) AND (private.site_role(e.site_id) = ANY (ARRAY['creator'::org_role, 'admin'::org_role, 'owner'::org_role])))))` }),
 	pgPolicy("element_evidence_insert", { as: "permissive", for: "insert", to: ["authenticated"] }),
 	pgPolicy("element_evidence_select", { as: "permissive", for: "select", to: ["authenticated"] }),
+]);
+
+export const orgInvites = pgTable("org_invites", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	orgId: uuid("org_id").notNull(),
+	email: text().notNull(),
+	role: orgRole().notNull(),
+	invitedBy: uuid("invited_by").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("org_invites_email_idx").using("btree", sql`lower(email)`),
+	foreignKey({
+			columns: [table.orgId],
+			foreignColumns: [organisations.id],
+			name: "org_invites_org_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.invitedBy],
+			foreignColumns: [profiles.id],
+			name: "org_invites_invited_by_fkey"
+		}),
+	unique("org_invites_org_email_key").on(table.orgId, table.email),
+	pgPolicy("org_invites_delete", { as: "permissive", for: "delete", to: ["authenticated"], using: sql`(private.org_role(org_id) = ANY (ARRAY['admin'::org_role, 'owner'::org_role]))` }),
+	pgPolicy("org_invites_insert", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	pgPolicy("org_invites_select", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
 export const orgMembers = pgTable("org_members", {

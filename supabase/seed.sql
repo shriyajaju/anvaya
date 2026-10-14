@@ -44,11 +44,11 @@ begin
     ('00000000-0000-0000-0000-000000000000', v_mehta, 'authenticated', 'authenticated', 'r.mehta@anvaya.test', extensions.crypt('placeholder', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), '', '', '', ''),
     ('00000000-0000-0000-0000-000000000000', v_rao, 'authenticated', 'authenticated', 's.rao@anvaya.test', extensions.crypt('placeholder', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), '', '', '', '');
 
-  insert into auth.identities (provider_id, user_id, identity_data, provider)
+  insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
   values
-    ('a.iyer@anvaya.test', v_iyer, jsonb_build_object('sub', v_iyer::text, 'email', 'a.iyer@anvaya.test'), 'email'),
-    ('r.mehta@anvaya.test', v_mehta, jsonb_build_object('sub', v_mehta::text, 'email', 'r.mehta@anvaya.test'), 'email'),
-    ('s.rao@anvaya.test', v_rao, jsonb_build_object('sub', v_rao::text, 'email', 's.rao@anvaya.test'), 'email');
+    ('a.iyer@anvaya.test', v_iyer, jsonb_build_object('sub', v_iyer::text, 'email', 'a.iyer@anvaya.test'), 'email', now(), now()),
+    ('r.mehta@anvaya.test', v_mehta, jsonb_build_object('sub', v_mehta::text, 'email', 'r.mehta@anvaya.test'), 'email', now(), now()),
+    ('s.rao@anvaya.test', v_rao, jsonb_build_object('sub', v_rao::text, 'email', 's.rao@anvaya.test'), 'email', now(), now());
 
   insert into public.profiles (id, name, initials, title)
   values
