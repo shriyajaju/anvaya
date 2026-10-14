@@ -21,3 +21,28 @@ body {
   background: var(--color-page);
   color: var(--color-text-1);
 }
+
+.anvaya-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-2) 0%,
+    var(--color-surface) 50%,
+    var(--color-surface-2) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .anvaya-skeleton {
+    animation: anvaya-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes anvaya-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
