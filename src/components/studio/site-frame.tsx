@@ -9,7 +9,7 @@ import { Topbar } from "@/components/studio/topbar";
 import { WorkspaceProvider, useWorkspace } from "@/components/studio/workspace-context";
 import type { SurvivalElement, TimelineData } from "@/lib/studio/records";
 import { WIDE_STEPS, isSiteStep, type SiteStepId } from "@/lib/studio/steps";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
 export function SiteFrame({
@@ -75,9 +75,10 @@ function SiteFrameBody({
 }) {
   const { pins, caption, timelineView, evidenceView } = useWorkspace();
   const pathname = usePathname();
+  const search = useSearchParams();
   const segment = pathname.split("/").filter(Boolean).at(-1) ?? "overview";
   const step: SiteStepId = isSiteStep(segment) ? segment : "overview";
-  const wide = WIDE_STEPS.includes(step);
+  const wide = WIDE_STEPS.includes(step) || (step === "stories" && Boolean(search.get("story")));
 
   return (
     <div className="min-h-screen">
@@ -128,6 +129,7 @@ function SiteFrameBody({
                 previewToken={previewToken}
                 caption={step === "overview" ? caption : undefined}
                 openLabel={name}
+                address={step === "stories" ? "stories" : undefined}
               />
             )}
             </div>

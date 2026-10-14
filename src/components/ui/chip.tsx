@@ -72,11 +72,12 @@ export function ChipConfidence({
   );
 }
 
-export type StatusState = "Draft" | "In review" | "Published" | "Archived";
+export type StatusState = "Draft" | "In review" | "Approved" | "Published" | "Archived";
 
 const statusTone: Record<StatusState, string> = {
   Draft: "bg-surface-2 text-text-2",
   "In review": "bg-review-bg text-review",
+  Approved: "bg-accent-bg text-accent",
   Published: "bg-conf-high-bg text-conf-high",
   Archived: "bg-surface-2 text-text-3",
 };
@@ -91,11 +92,13 @@ export function ChipStatus({
   const toneClass = statusTone[state];
   const dot = toneClass.includes("text-review")
     ? "bg-review"
-    : toneClass.includes("text-conf-high")
-      ? "bg-conf-high"
-      : toneClass.includes("text-text-3")
-        ? "bg-text-3"
-        : "bg-text-2";
+    : toneClass.includes("text-accent")
+      ? "bg-accent"
+      : toneClass.includes("text-conf-high")
+        ? "bg-conf-high"
+        : toneClass.includes("text-text-3")
+          ? "bg-text-3"
+          : "bg-text-2";
   return (
     <span
       className={`inline-flex h-6 items-center gap-1.5 rounded-pill px-2.5 text-[11px] font-medium uppercase leading-4 tracking-[0.08em] ${toneClass} ${className}`}
