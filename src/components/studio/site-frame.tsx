@@ -1,13 +1,59 @@
 "use client";
 
+import { MapCard } from "@/components/studio/map-card";
 import { PreviewPanel } from "@/components/studio/preview-panel";
 import { RouteTransition } from "@/components/studio/route-transition";
+import { TimelineCanvas } from "@/components/studio/timeline-canvas";
 import { Topbar } from "@/components/studio/topbar";
+import { WorkspaceProvider, useWorkspace } from "@/components/studio/workspace-context";
+import type { SurvivalElement, TimelineData } from "@/lib/studio/records";
 import { WIDE_STEPS, isSiteStep, type SiteStepId } from "@/lib/studio/steps";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 export function SiteFrame({
+  slug,
+  name,
+  location,
+  revision,
+  previewToken,
+  sites,
+  complete,
+  pins,
+  timeline,
+  caption,
+  children,
+}: {
+  slug: string;
+  name: string;
+  location: string | null;
+  revision: string;
+  previewToken: string;
+  sites: { slug: string; name: string }[];
+  complete: Record<SiteStepId, boolean>;
+  pins: SurvivalElement[];
+  timeline: TimelineData;
+  caption: string;
+  children: ReactNode;
+}) {
+  return (
+    <WorkspaceProvider pins={pins} timeline={timeline} caption={caption}>
+      <SiteFrameBody
+        slug={slug}
+        name={name}
+        location={location}
+        revision={revision}
+        previewToken={previewToken}
+        sites={sites}
+        complete={complete}
+      >
+        {children}
+      </SiteFrameBody>
+    </WorkspaceProvider>
+  );
+}
+
+function SiteFrameBody({
   slug,
   name,
   location,
@@ -26,6 +72,7 @@ export function SiteFrame({
   complete: Record<SiteStepId, boolean>;
   children: ReactNode;
 }) {
+  const { pins, caption, timelineView } = useWorkspace();
   const pathname = usePathname();
   const segment = pathname.split("/").filter(Boolean).at(-1) ?? "overview";
   const step: SiteStepId = isSiteStep(segment) ? segment : "overview";
@@ -47,13 +94,30 @@ export function SiteFrame({
         {wide ? null : (
           <div className="hidden min-[1100px]:block">
             <div className="sticky top-0 h-[calc(100vh-72px)] pb-6">
+              {step === "document" ? (
               <PreviewPanel
                 slug={slug}
                 name={name}
                 location={location}
                 revision={revision}
                 previewToken={previewToken}
+                mode="map"
+                openLabel={name}
+                map={<MapCard pins={pins} title="Plan · condition" />}
               />
+            ) : step === "timeline" && timelineView === "periods" ? (
+              <TimelineCanvas />
+            ) : (
+              <PreviewPanel
+                slug={slug}
+                name={name}
+                location={location}
+                revision={revision}
+                previewToken={previewToken}
+                caption={step === "overview" ? caption : undefined}
+                openLabel={name}
+              />
+            )}
             </div>
           </div>
         )}

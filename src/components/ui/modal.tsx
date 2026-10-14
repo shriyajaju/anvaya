@@ -16,6 +16,9 @@ export function Modal({
   percent = 66,
   back = false,
   disabled = false,
+  footer = true,
+  continueLabel = "Continue",
+  onContinue,
   children,
   trigger,
 }: {
@@ -27,6 +30,9 @@ export function Modal({
   percent?: number;
   back?: boolean;
   disabled?: boolean;
+  footer?: boolean;
+  continueLabel?: string;
+  onContinue?: () => void;
   children?: ReactNode;
   trigger?: ReactNode;
 }) {
@@ -36,7 +42,17 @@ export function Modal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-[color-mix(in_srgb,var(--color-overlay)_40%,transparent)]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 w-[640px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-modal bg-surface p-8 text-text-1 shadow-float outline-none">
-          <ModalBody step={step} title={title} progress={progress} percent={percent} back={back} disabled={disabled}>
+          <ModalBody
+            step={step}
+            title={title}
+            progress={progress}
+            percent={percent}
+            back={back}
+            disabled={disabled}
+            footer={footer}
+            continueLabel={continueLabel}
+            onContinue={onContinue}
+          >
             {children}
           </ModalBody>
           <Dialog.Close className={`${focusRing} absolute right-4 top-4 rounded-button p-1 text-text-2`} aria-label="Close">
@@ -56,6 +72,7 @@ export function ModalBody({
   back = false,
   disabled = false,
   continueLabel = "Continue",
+  footer = true,
   onCancel,
   onBack,
   onContinue,
@@ -68,6 +85,7 @@ export function ModalBody({
   back?: boolean;
   disabled?: boolean;
   continueLabel?: string;
+  footer?: boolean;
   onCancel?: () => void;
   onBack?: () => void;
   onContinue?: () => void;
@@ -79,11 +97,13 @@ export function ModalBody({
       <h2 className="mt-2 text-[24px] font-medium leading-8 text-text-1">{title}</h2>
       {progress ? <ProgressBar percent={percent} className="mt-2 w-full" /> : null}
       <div className="min-h-24 py-6 text-[15px] leading-6 text-text-2">{children ?? "Add fields or supporting content here."}</div>
-      <div className="flex justify-end gap-3">
-        <Button type="Secondary" label="Cancel" onClick={onCancel} />
-        {back ? <Button type="Secondary" label="Back" onClick={onBack} /> : null}
-        <Button label={continueLabel} state={disabled ? "Disabled" : "Default"} onClick={onContinue} />
-      </div>
+      {footer ? (
+        <div className="flex justify-end gap-3">
+          <Button type="Secondary" label="Cancel" onClick={onCancel} />
+          {back ? <Button type="Secondary" label="Back" onClick={onBack} /> : null}
+          <Button label={continueLabel} state={disabled ? "Disabled" : "Default"} onClick={onContinue} />
+        </div>
+      ) : null}
     </div>
   );
 }

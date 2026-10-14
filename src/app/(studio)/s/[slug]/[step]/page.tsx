@@ -1,14 +1,36 @@
+import { DocumentBoard } from "@/components/studio/document-board";
+import { OverviewBoard } from "@/components/studio/overview-board";
 import { PlaceholderCards } from "@/components/studio/placeholder-cards";
+import { TimelineBoard } from "@/components/studio/timeline-board";
+import { getSession } from "@/lib/auth/session";
 import { SITE_STEPS, WIDE_STEPS, isSiteStep } from "@/lib/studio/steps";
-import { notFound } from "next/navigation";
+import { getOrgSite, stepStatusForSite } from "@/server/studio";
+import { documentForSite, overviewForSite } from "@/server/workspace";
+import { notFound, redirect } from "next/navigation";
 
 export default async function SiteStepPage({
   params,
 }: Readonly<{
   params: Promise<{ slug: string; step: string }>;
 }>) {
-  const { step } = await params;
+  const { slug, step } = await params;
   if (!isSiteStep(step)) notFound();
+  const session = await getSession();
+  if (!session?.org) redirect("/login");
+  const site = await getOrgSite(session.org.orgId, slug);
+  if (!site) notFound();
+
+  if (step === "overview") {
+    const complete = await stepStatusForSite(site);
+    const data = await overviewForSite(site.id, complete);
+    return <OverviewBoard slug={slug} data={data} />;
+  }
+  if (step === "document") {
+    const data = await documentForSite(site.id, slug);
+    return <DocumentBoard data={data} />;
+  }
+  if (step === "timeline") return <TimelineBoard />;
+
   const label = SITE_STEPS.find((item) => item.id === step)?.label ?? step;
   const wide = WIDE_STEPS.includes(step);
   return (
