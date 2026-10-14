@@ -10,20 +10,30 @@ const parts: Record<ConfidenceProportion, [number, number, number]> = {
 export function ConfidenceBar({
   proportion = "3:1:1",
   legend = true,
+  counts,
   className = "",
 }: {
   proportion?: ConfidenceProportion;
   legend?: boolean;
+  counts?: { high: number; medium: number; low: number };
   className?: string;
 }) {
-  const [high, medium, low] = parts[proportion];
-  const total = high + medium + low;
+  const [presetHigh, presetMedium, presetLow] = parts[proportion];
+  const high = counts?.high ?? presetHigh;
+  const medium = counts?.medium ?? presetMedium;
+  const low = counts?.low ?? presetLow;
+  const sum = high + medium + low;
+  const width = className.includes("w-") ? "" : "w-60";
   return (
-    <div className={`w-60 ${className}`}>
-      <div className="flex h-2 overflow-hidden rounded-bar" role="img" aria-label={`Confidence ${proportion}`}>
-        <span className="bg-conf-high" style={{ width: `${(high / total) * 100}%` }} />
-        <span className="bg-conf-medium" style={{ width: `${(medium / total) * 100}%` }} />
-        <span className="bg-conf-low" style={{ width: `${(low / total) * 100}%` }} />
+    <div className={`${width} ${className}`}>
+      <div className="flex h-2 overflow-hidden rounded-bar bg-surface-2" role="img" aria-label={`Confidence ${proportion}`}>
+        {sum > 0 ? (
+          <>
+            <span className="bg-conf-high" style={{ width: `${(high / sum) * 100}%` }} />
+            <span className="bg-conf-medium" style={{ width: `${(medium / sum) * 100}%` }} />
+            <span className="bg-conf-low" style={{ width: `${(low / sum) * 100}%` }} />
+          </>
+        ) : null}
       </div>
       {legend ? (
         <p className="mt-2 text-[13px] leading-5 text-text-2">
@@ -36,9 +46,10 @@ export function ConfidenceBar({
 
 export function ProgressBar({ percent = 0, className = "" }: { percent?: number; className?: string }) {
   const value = Math.max(0, Math.min(100, percent));
+  const width = className.includes("w-") ? "" : "w-60";
   return (
     <div
-      className={`h-1 w-60 overflow-hidden rounded-bar bg-surface-2 ${className}`}
+      className={`h-1 overflow-hidden rounded-bar bg-surface-2 ${width} ${className}`}
       role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}

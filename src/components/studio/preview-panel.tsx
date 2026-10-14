@@ -10,18 +10,28 @@ export function PreviewPanel({
   slug,
   name,
   location,
+  description,
   revision,
   previewToken,
   mode = "phone",
   map,
+  caption,
+  openLabel = "Open",
+  watermark = true,
+  stats,
 }: {
   slug: string;
   name: string;
   location: string | null;
+  description?: string | null;
   revision: string;
   previewToken: string;
   mode?: "phone" | "map";
   map?: ReactNode;
+  caption?: string;
+  openLabel?: string;
+  watermark?: boolean;
+  stats?: { elements: number; sources: number; stories: number };
 }) {
   const [dark, setDark] = useState(true);
   const openHref = `/${slug}?preview=${encodeURIComponent(previewToken)}`;
@@ -41,7 +51,7 @@ export function PreviewPanel({
             rel="noreferrer"
             className={`${focusRing} inline-flex h-10 items-center rounded-button bg-primary px-[18px] text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-on-primary`}
           >
-            Open
+            Open {openLabel}
           </a>
         </div>
       </div>
@@ -52,10 +62,20 @@ export function PreviewPanel({
           </div>
         ) : (
           <PhoneFrame revision={revision} theme={dark ? "dark" : "light"}>
-            <VisitorPreview name={name} location={location} preview framed />
+            <VisitorPreview
+              name={name}
+              location={location}
+              description={description}
+              preview={watermark}
+              framed
+              stats={stats}
+            />
           </PhoneFrame>
         )}
       </div>
+      {caption ? (
+        <p className="mt-4 text-[13px] leading-5 text-[color:var(--color-glass-caption)] opacity-70">{caption}</p>
+      ) : null}
     </section>
   );
 }

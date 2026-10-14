@@ -55,6 +55,10 @@ export function ModalBody({
   percent = 66,
   back = false,
   disabled = false,
+  continueLabel = "Continue",
+  onCancel,
+  onBack,
+  onContinue,
   children,
 }: {
   step?: string;
@@ -63,6 +67,10 @@ export function ModalBody({
   percent?: number;
   back?: boolean;
   disabled?: boolean;
+  continueLabel?: string;
+  onCancel?: () => void;
+  onBack?: () => void;
+  onContinue?: () => void;
   children?: ReactNode;
 }) {
   return (
@@ -72,9 +80,9 @@ export function ModalBody({
       {progress ? <ProgressBar percent={percent} className="mt-2 w-full" /> : null}
       <div className="min-h-24 py-6 text-[15px] leading-6 text-text-2">{children ?? "Add fields or supporting content here."}</div>
       <div className="flex justify-end gap-3">
-        <Button type="Secondary" label="Cancel" />
-        {back ? <Button type="Secondary" label="Back" /> : null}
-        <Button label="Continue" state={disabled ? "Disabled" : "Default"} />
+        <Button type="Secondary" label="Cancel" onClick={onCancel} />
+        {back ? <Button type="Secondary" label="Back" onClick={onBack} /> : null}
+        <Button label={continueLabel} state={disabled ? "Disabled" : "Default"} onClick={onContinue} />
       </div>
     </div>
   );
