@@ -78,6 +78,7 @@ export async function registerAsset(input: z.infer<typeof assetSchema>) {
     uploaded_by: session.userId,
   });
   if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/assets");
   return done(parsed.data.slug, "document");
 }
 

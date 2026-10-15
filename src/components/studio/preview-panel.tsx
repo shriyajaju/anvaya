@@ -37,7 +37,9 @@ export function PreviewPanel({
   address?: string;
   ribbon?: string[];
 }) {
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(() =>
+    typeof window === "undefined" ? true : window.localStorage.getItem("anvaya-preview-theme") !== "light",
+  );
   const openHref = `/${slug}${address ? `/${address}` : ""}?preview=${encodeURIComponent(previewToken)}`;
 
   return (
