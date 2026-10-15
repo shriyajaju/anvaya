@@ -51,7 +51,7 @@ export function PhoneFrame({
           className="origin-center overflow-hidden rounded-phone border border-[color-mix(in_srgb,var(--color-glass-border)_40%,transparent)] bg-[var(--color-phone)] shadow-phone"
           style={{ width: 390, height: 844, transform: `scale(${scale})` }}
         >
-          <div data-theme={theme} className="h-full w-full bg-page text-text-1">
+          <div data-theme={theme} data-phone-frame="" className="h-full w-full bg-page text-text-1">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${revision}-${theme}`}
