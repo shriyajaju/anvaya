@@ -5,7 +5,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, TransformControls } from "@react-three/drei";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SceneElement, SceneTransform } from "@/server/reconstruct-data";
-import { Suspense, useLayoutEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { useReducedMotion } from "framer-motion";
+import { Suspense, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
 
@@ -32,25 +33,37 @@ export function SceneBuilder({
 }) {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const opacityRef = useRef(1);
+  const reduced = useReducedMotion();
   const { active } = useProgress();
+  const [webgl] = useState(() => {
+    if (typeof document === "undefined") return true;
+    try {
+      const canvas = document.createElement("canvas");
+      return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+    } catch {
+      return false;
+    }
+  });
   const parts = elements.filter((element) => element.kind !== "group" && element.visible);
   const remains = elements.find((element) => element.kind === "group" && element.modelUrl);
+  if (!webgl) {
+    return <p className="flex h-full min-h-[520px] items-center justify-center rounded-card bg-surface text-text-2">3D unavailable</p>;
+  }
 
   return (
-    <div className="relative h-full min-h-[520px] overflow-hidden rounded-card bg-[#ece9e3]">
+    <div className="relative h-full min-h-[520px] overflow-hidden rounded-card bg-surface-2">
       {active ? <Skeleton className="absolute inset-4 z-10" /> : null}
-      <Canvas
+      <Canvas gl={{ alpha: true }}
         camera={{ position: [5, 3.2, 6.5], fov: 40 }}
         onCreated={({ camera }) => {
           cameraRef.current = camera as THREE.PerspectiveCamera;
         }}
       >
-        <color attach="background" args={["#ece9e3"]} />
         <ambientLight intensity={0.7} />
         <directionalLight position={[4, 8, 3]} intensity={1.1} />
         <gridHelper args={[12, 24, "#d5d2cb", "#e4e0d8"]} />
         <Suspense fallback={null}>
-          <OpacityDriver target={thenNow === "then" ? 0.12 : thenNow === "compare" ? 0.45 : 1} opacityRef={opacityRef} />
+          <OpacityDriver target={thenNow === "then" ? 0.12 : thenNow === "compare" ? 0.45 : 1} opacityRef={opacityRef} reduced={reduced === true} />
           {remains?.modelUrl ? (
             <Model url={remains.modelUrl} tint={null} opacity={0.85} selected={false} dashed={false} opacityRef={opacityRef} remains />
           ) : null}
@@ -70,7 +83,7 @@ export function SceneBuilder({
             />
           ))}
         </Suspense>
-        <OrbitControls makeDefault enableDamping autoRotate={readOnly} autoRotateSpeed={0.6} enablePan={!readOnly} />
+        <OrbitControls makeDefault enableDamping autoRotate={readOnly && reduced !== true} autoRotateSpeed={0.6} enablePan={!readOnly} />
       </Canvas>
     </div>
   );
@@ -79,12 +92,14 @@ export function SceneBuilder({
 function OpacityDriver({
   target,
   opacityRef,
+  reduced,
 }: {
   target: number;
   opacityRef: MutableRefObject<number>;
+  reduced: boolean;
 }) {
   useFrame(() => {
-    opacityRef.current += (target - opacityRef.current) * 0.08;
+    opacityRef.current = reduced ? target : opacityRef.current + (target - opacityRef.current) * 0.08;
   });
   return null;
 }

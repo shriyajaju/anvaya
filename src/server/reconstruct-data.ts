@@ -68,7 +68,7 @@ export async function reconstructForSite(siteId: string, slug: string, previewTo
         models.set(asset.id, `/${asset.storage_path}`);
         return;
       }
-      const signed = await supabase.storage.from("assets").createSignedUrl(asset.storage_path, 60 * 60);
+      const signed = await supabase.storage.from("assets").createSignedUrl(asset.storage_path, 60 * 60); // expires within one hour
       if (signed.data?.signedUrl) models.set(asset.id, signed.data.signedUrl);
     }),
   );

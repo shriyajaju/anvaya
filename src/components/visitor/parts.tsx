@@ -5,7 +5,7 @@ import { visitorLabel } from "@/lib/visitor/types";
 
 export function GlassPill({ children, href }: { children: React.ReactNode; href?: string }) {
   const className =
-    "inline-flex h-10 items-center justify-center rounded-pill border border-white/20 bg-white/10 px-3.5 text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-[#f5f5f5] backdrop-blur-[8px]";
+    "inline-flex h-10 items-center justify-center rounded-pill border border-white/40 bg-white/15 px-3.5 text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-[var(--color-glass-text)] backdrop-blur-[8px]";
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -52,7 +52,7 @@ export function TopNav({ back, title, info }: { back: string; title: string; inf
 }
 
 export function ConfidenceChip({ level, href }: { level: VisitorLevel; href: string }) {
-  const color = level === "high" ? "#a0de9e" : level === "medium" ? "#f1c26b" : "#f3b4bc";
+  const color = level === "high" ? "var(--color-conf-glass-high)" : level === "medium" ? "var(--color-conf-glass-medium)" : "var(--color-conf-glass-low)";
   return (
     <Link href={href} className="inline-flex h-6 items-center gap-1.5 rounded-pill bg-black/55 px-2.5 text-[11px] font-medium uppercase tracking-[0.08em] backdrop-blur-[8px]" style={{ color }}>
       <span className="size-1.5 rounded-full" style={{ background: color }} />

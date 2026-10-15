@@ -24,6 +24,12 @@
   --color-conf-low-bg: #fbe5e1;
   --color-review: #0d68e0;
   --color-review-bg: #edf4ff;
+  --color-camera-from: #4a4238;
+  --color-camera-to: #1c1c1c;
+  --color-glass-text: #f5f5f5;
+  --color-conf-glass-high: #1e7a32;
+  --color-conf-glass-medium: #8a6410;
+  --color-conf-glass-low: #9d2030;
   --shadow-card: 0 8px 32px #0000000f;
   --shadow-float: 0 16px 48px #0000001f;
   color-scheme: light;
@@ -49,6 +55,12 @@
   --color-conf-low-bg: #3f1f1b;
   --color-review: #0d68e0;
   --color-review-bg: #1e2a47;
+  --color-camera-from: #4a4238;
+  --color-camera-to: #1c1c1c;
+  --color-glass-text: #f5f5f5;
+  --color-conf-glass-high: #b7ebc4;
+  --color-conf-glass-medium: #f1c26b;
+  --color-conf-glass-low: #f3b4bc;
   --shadow-card: 0 8px 32px #00000066;
   --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
   color-scheme: dark;

@@ -166,7 +166,7 @@ export async function documentForSite(siteId: string, slug: string): Promise<Doc
   const survival = (condition.data?.survival ?? {}) as Record<string, number>;
   const signed = await Promise.all(
     (assets.data ?? []).map(async (asset) => {
-      const { data } = await supabase.storage.from("assets").createSignedUrl(asset.storage_path, 60 * 60);
+      const { data } = await supabase.storage.from("assets").createSignedUrl(asset.storage_path, 60 * 60); // expires within one hour
       return {
         id: asset.id,
         kind: asset.kind,

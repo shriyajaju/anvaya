@@ -41,7 +41,7 @@ export function Modal({
       {trigger ? <Dialog.Trigger asChild>{trigger}</Dialog.Trigger> : null}
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-[color-mix(in_srgb,var(--color-overlay)_40%,transparent)]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 w-[640px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-modal bg-surface p-8 text-text-1 shadow-float outline-none">
+        <Dialog.Content className="anvaya-modal fixed left-1/2 top-1/2 w-[640px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-modal bg-surface p-8 text-text-1 shadow-float outline-none">
           <ModalBody
             step={step}
             title={title}

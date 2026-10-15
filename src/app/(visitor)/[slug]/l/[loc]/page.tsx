@@ -32,6 +32,15 @@ export default async function LocationPage({
           <ConfidenceChip level={element.confidence} href={`/${slug}/hdwk/${element.id}${suffix}`} />
           <p className="text-[15px] leading-6">{element.name}</p>
           <VButton href={`/${slug}/ar/${element.id}${suffix}`}>View in AR</VButton>
+          {element.kind === "group"
+            ? snap.elements
+                .filter((item) => item.parentId === element.id && item.visible)
+                .map((item) => (
+                  <a key={item.id} href={`/${slug}/ar/${item.id}${suffix}`} className="text-[15px] underline">
+                    {item.name}
+                  </a>
+                ))
+            : null}
         </div>
       ) : null}
     </main>

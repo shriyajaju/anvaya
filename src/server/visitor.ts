@@ -1,6 +1,7 @@
 import "server-only";
 
 import { verifyPreviewToken } from "@/lib/preview-token";
+import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { VisitorElement, VisitorSnapshot, VisitorStory } from "@/lib/visitor/types";
 import { revalidatePath } from "next/cache";
@@ -13,7 +14,8 @@ export async function getSnapshot(slug: string, version?: string | null, preview
   const site = await admin.from("sites").select("id, slug, status").eq("slug", slug).maybeSingle();
   if (site.error || !site.data) return null;
   const siteId = site.data.id as string;
-  const preview = Boolean(previewToken && verifyPreviewToken(previewToken, { slug, siteId }));
+  if (previewToken && !verifyPreviewToken(previewToken, { slug, siteId })) redirect(`/${slug}?preview=expired`);
+  const preview = Boolean(previewToken);
   if (!preview && site.data.status !== "published") return null;
 
   let raw: Record<string, unknown> | null = null;
@@ -207,6 +209,8 @@ export async function logEvent(input: z.infer<typeof eventSchema>) {
   const parsed = eventSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const };
   const admin = createAdminClient();
+  const allowed = await admin.rpc("visitor_insert_allowed", { p_session: parsed.data.sessionId });
+  if (allowed.error || allowed.data !== true) return { ok: false as const };
   const { error } = await admin.from("analytics_events").insert({
     site_id: parsed.data.siteId,
     version_id: parsed.data.versionId,
@@ -233,6 +237,8 @@ export async function saveFeedback(input: z.infer<typeof feedbackSchema>) {
   const parsed = feedbackSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Choose a rating from 1 to 5." };
   const admin = createAdminClient();
+  const allowed = await admin.rpc("visitor_insert_allowed", { p_session: parsed.data.sessionId });
+  if (allowed.error || allowed.data !== true) return { ok: false as const, error: "Too many responses from this visit. Try again later." };
   const { error } = await admin.from("feedback").insert({
     site_id: parsed.data.siteId,
     version_id: parsed.data.versionId,

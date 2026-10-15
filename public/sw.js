@@ -1,4 +1,5 @@
 const CACHE = "anvaya-visitor-v1";
+let site = "";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE));
@@ -12,6 +13,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
   const slug = event.data?.slug;
   if (!slug) return;
+  site = slug;
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll([`/${slug}`, `/api/visitor/${slug}`]).catch(() => undefined)),
   );
@@ -19,7 +21,11 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  const cacheable = url.pathname.startsWith("/api/visitor/") || url.pathname.includes("/storage/v1/object/public/published/") || url.pathname.startsWith("/seed-models/");
+  const cacheable =
+    (site && (url.pathname === `/${site}` || url.pathname.startsWith(`/${site}/`))) ||
+    url.pathname.startsWith("/api/visitor/") ||
+    url.pathname.includes("/storage/v1/object/public/published/") ||
+    url.pathname.startsWith("/seed-models/");
   if (!cacheable) return;
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {

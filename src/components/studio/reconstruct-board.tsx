@@ -243,16 +243,21 @@ function InspectorForm({ data, element, onToast }: { data: ReconstructData; elem
             value={confidence}
             onValueChange={(value) => {
               const next = value as SceneElement["confidence"];
+              const previous = confidence;
+              setLevel(next);
               void setConfidence({ siteId: data.siteId, id: element.id, confidence: next }).then((saved) => {
                 if (!saved.ok && saved.error === "HIGH_NEEDS_EVIDENCE") {
+                  setLevel(previous);
                   setNotice("High confidence needs at least one linked source.");
+                  onToast("Confidence was not changed.");
                   return;
                 }
                 if (!saved.ok) {
+                  setLevel(previous);
                   setNotice(saved.error);
+                  onToast("Confidence was not changed.");
                   return;
                 }
-                setLevel(next);
                 setNotice(null);
                 setPulse(true);
                 window.setTimeout(() => setPulse(false), 400);

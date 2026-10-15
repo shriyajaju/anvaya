@@ -1,8 +1,12 @@
 import { PwaClient } from "@/components/visitor/pwa-client";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1c1c1c",
 };
 
 export default async function SiteLayout({
