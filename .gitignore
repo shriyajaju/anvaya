@@ -39,3 +39,4 @@ supabase/.branches
 dist
 dist-ssr
 *.local
+.vercel
