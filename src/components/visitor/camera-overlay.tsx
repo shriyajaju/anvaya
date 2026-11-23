@@ -103,15 +103,6 @@ export function CameraOverlay({
     img.src = sourcePhotoUrl;
   }, [sourcePhotoUrl]);
 
-  useEffect(() => {
-    if (!open) {
-      setStep("align");
-      setOpacity(70);
-      setScale(1);
-      setOffset({ x: 0, y: 0 });
-    }
-  }, [open]);
-
   function onPointerDown(event: React.PointerEvent) {
     if (step !== "reveal") return;
     (event.target as HTMLElement).setPointerCapture?.(event.pointerId);

@@ -2,7 +2,7 @@
 
 import { focusRing } from "@/components/ui/motion";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 export function Tooltip({
   label,
@@ -13,9 +13,6 @@ export function Tooltip({
   children: ReactNode;
   side?: "top" | "right" | "bottom" | "left";
 }) {
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
-  if (!ready) return children;
   return (
     <TooltipPrimitive.Provider delayDuration={200}>
       <TooltipPrimitive.Root>

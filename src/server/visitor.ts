@@ -130,10 +130,7 @@ function toReconstruction(
   if (!raw || typeof raw !== "object") return null;
   const row = raw as Record<string, unknown>;
   const source = row.source_photo_id ? meta.files.get(String(row.source_photo_id)) : undefined;
-  let imageUrl = (row.image_url as string | null) ?? null;
-  if (imageUrl && !meta.preview && imageUrl.includes("/storage/v1/object/")) {
-    // Keep published URL as stored in the snapshot.
-  }
+  const imageUrl = (row.image_url as string | null) ?? null;
   const sourcePhotoUrl =
     (row.source_photo_url as string | null) ??
     assetUrl(source, meta) ??

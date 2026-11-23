@@ -59,16 +59,11 @@ export function ReconstructionScreen({
   startCamera?: boolean;
 }) {
   const [then, setThen] = useState(80);
-  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(Boolean(startCamera));
   const [cameraNote, setCameraNote] = useState<string | null>(null);
   const [guideUrl, setGuideUrl] = useState(edgeGuideUrl);
   const focusRegions = regions.filter((region) => region.elementId === elementId);
   const shown = focusRegions.length > 0 ? focusRegions : regions;
-
-  useEffect(() => {
-    if (!startCamera) return;
-    setCameraOpen(true);
-  }, [startCamera]);
 
   useEffect(() => {
     if (!cameraOpen || guideUrl || !sourcePhotoId) return;
@@ -179,25 +174,28 @@ export function ReconstructionScreen({
         <ActionGrid slug={slug} elementId={elementId} />
       </Sheet>
 
-      <CameraOverlay
-        open={cameraOpen}
-        onClose={() => setCameraOpen(false)}
-        onFallback={(reason) => {
-          setCameraOpen(false);
-          setCameraNote(reason);
-        }}
-        slug={slug}
-        elementId={elementId}
-        level={level}
-        label={label}
-        sourcePhotoUrl={sourcePhotoUrl}
-        reconstructionUrl={reconstructionUrl}
-        edgeGuideUrl={guideUrl}
-        wireframeUrl={wireframeUrl}
-        regions={regions}
-        viewpointLabel={viewpointLabel}
-        viewpointNote={viewpointNote}
-      />
+      {cameraOpen ? (
+        <CameraOverlay
+          key="camera-overlay"
+          open
+          onClose={() => setCameraOpen(false)}
+          onFallback={(reason) => {
+            setCameraOpen(false);
+            setCameraNote(reason);
+          }}
+          slug={slug}
+          elementId={elementId}
+          level={level}
+          label={label}
+          sourcePhotoUrl={sourcePhotoUrl}
+          reconstructionUrl={reconstructionUrl}
+          edgeGuideUrl={guideUrl}
+          wireframeUrl={wireframeUrl}
+          regions={regions}
+          viewpointLabel={viewpointLabel}
+          viewpointNote={viewpointNote}
+        />
+      ) : null}
     </main>
   );
 }
