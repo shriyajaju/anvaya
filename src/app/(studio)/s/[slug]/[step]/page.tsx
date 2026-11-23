@@ -4,16 +4,19 @@ import { OverviewBoard } from "@/components/studio/overview-board";
 import { PlaceholderCards } from "@/components/studio/placeholder-cards";
 import { TimelineBoard } from "@/components/studio/timeline-board";
 import { ReconstructBoard } from "@/components/studio/reconstruct-board";
+import { ReconstructImageBoard } from "@/components/studio/reconstruct-image-board";
 import { ArchiveBoard } from "@/components/studio/archive-board";
 import { PublishBoard } from "@/components/studio/publish-board";
 import { ReviewBoard } from "@/components/studio/review-board";
 import { StoriesBoard } from "@/components/studio/stories-board";
 import { getSession } from "@/lib/auth/session";
+import { isImageReconstruction } from "@/lib/reconstruction/mode";
 import { signPreviewToken } from "@/lib/preview-token";
 import { SITE_STEPS, WIDE_STEPS, isSiteStep } from "@/lib/studio/steps";
 import { getOrgSite, stepStatusForSite } from "@/server/studio";
 import { evidenceForSite, type SourceKind } from "@/server/evidence-data";
 import { reconstructForSite } from "@/server/reconstruct-data";
+import { imageReconstructForSite } from "@/server/reconstruction-data";
 import { compareVersions, publishPage, versionsForSite } from "@/server/publish-data";
 import { reviewForSite } from "@/server/review-data";
 import { storiesForSite } from "@/server/stories-data";
@@ -45,7 +48,12 @@ export default async function SiteStepPage({
   }
   if (step === "timeline") return <TimelineBoard />;
   if (step === "reconstruct") {
-    const data = await reconstructForSite(site.id, slug, signPreviewToken({ slug: site.slug, siteId: site.id }));
+    const previewToken = signPreviewToken({ slug: site.slug, siteId: site.id });
+    if (isImageReconstruction()) {
+      const data = await imageReconstructForSite(site.id, slug, previewToken);
+      return <ReconstructImageBoard data={data} />;
+    }
+    const data = await reconstructForSite(site.id, slug, previewToken);
     return <ReconstructBoard data={data} />;
   }
   if (step === "publish") {

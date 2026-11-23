@@ -22,7 +22,9 @@ export async function publishRelease(input: { siteId: string; number: string; no
   if (!parsed.success) return { ok: false as const, error: "Use a version like 1.1." };
   const session = await getSession();
   if (!session?.org) return { ok: false as const, error: "Sign in again." };
-  if (session.role !== "admin" && session.role !== "owner") return { ok: false as const, error: "Only an Admin can publish." };
+  if (session.role === "viewer" || session.role === "reviewer") {
+    return { ok: false as const, error: "You can view this site, not publish it." };
+  }
   const supabase = await createClient();
   const site = await supabase.from("sites").select("slug, name").eq("id", parsed.data.siteId).eq("org_id", session.org.orgId).maybeSingle();
   if (!site.data) return { ok: false as const, error: "Site not found." };
@@ -96,6 +98,28 @@ async function copyAssets(siteId: string, slug: string) {
       return { name: String(code), url: `${visitorOrigin}/${slug}?l=${code}` };
     }),
   ];
+  const viewpoints = await admin
+    .from("assets")
+    .select("id, viewpoint_label")
+    .eq("site_id", siteId)
+    .eq("kind", "photo")
+    .not("viewpoint_label", "is", null);
+  const recon = await admin
+    .from("reconstruction_images")
+    .select("source_photo_id, element_ids")
+    .eq("site_id", siteId)
+    .eq("is_current", true)
+    .eq("status", "done")
+    .maybeSingle();
+  for (const viewpoint of viewpoints.data ?? []) {
+    const elementId = ((recon.data?.element_ids as string[] | null) ?? [])[0];
+    if (!elementId) continue;
+    if (recon.data?.source_photo_id && recon.data.source_photo_id !== viewpoint.id) continue;
+    codes.push({
+      name: `viewpoint-${String(viewpoint.id).slice(0, 8)}`,
+      url: `${visitorOrigin}/${slug}/ar/${elementId}?camera=1`,
+    });
+  }
   for (const code of codes) {
     const png = await QRCode.toBuffer(code.url, { type: "png", width: 512, margin: 1 });
     const svg = await QRCode.toString(code.url, { type: "svg" });

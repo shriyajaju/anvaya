@@ -3,18 +3,20 @@
 import { AccountMenu } from "@/components/studio/account-menu";
 import { focusRing } from "@/components/ui/motion";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useDarkTheme } from "@/lib/theme";
 import {
   Archive,
   BarChart3,
   Home,
   Landmark,
   Layers,
+  Moon,
   Settings,
+  Sun,
   ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 const NAV = [
   { href: "/", label: "Home", icon: Home, match: (path: string) => path === "/" },
@@ -36,18 +38,6 @@ const NAV = [
   { href: "/analytics", label: "Analytics", icon: BarChart3, match: (path: string) => path.startsWith("/analytics") },
 ] as const;
 
-function useDockedRail() {
-  const [docked, setDocked] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 1099px)");
-    const apply = () => setDocked(query.matches);
-    apply();
-    query.addEventListener("change", apply);
-    return () => query.removeEventListener("change", apply);
-  }, []);
-  return docked;
-}
-
 export function Rail({
   name,
   initials,
@@ -66,8 +56,6 @@ export function Rail({
   previewToken: string | null;
 }) {
   const pathname = usePathname();
-  const docked = useDockedRail();
-  const tipSide = docked ? "top" : "right";
 
   return (
     <nav
@@ -87,7 +75,7 @@ export function Rail({
           const active = item.match(pathname);
           const Icon = item.icon;
           return (
-            <Tooltip key={item.href} label={item.label} side={tipSide}>
+            <Tooltip key={item.href} label={item.label} side="top">
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
@@ -112,11 +100,13 @@ export function Rail({
           );
         })}
       </div>
-      <Tooltip label="Settings" side={tipSide}>
+      <div className="flex items-center min-[1100px]:mt-auto min-[1100px]:flex-col">
+        <ThemeButton />
+        <Tooltip label="Settings" side="top">
         <Link
           href="/settings"
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
-          className={`${focusRing} relative flex size-12 items-center justify-center rounded-rail-item min-[1100px]:mt-auto ${
+          className={`${focusRing} relative flex size-12 items-center justify-center rounded-rail-item ${
             pathname.startsWith("/settings") ? "text-text-1" : "text-text-2"
           }`}
         >
@@ -125,7 +115,26 @@ export function Rail({
           ) : null}
           <Settings aria-hidden className="size-5" />
         </Link>
-      </Tooltip>
+        </Tooltip>
+      </div>
     </nav>
+  );
+}
+
+function ThemeButton() {
+  const [dark, setDark] = useDarkTheme();
+  const Icon = dark ? Moon : Sun;
+  return (
+    <Tooltip label="Dark mode" side="top">
+      <button
+        type="button"
+        aria-pressed={dark}
+        aria-label="Dark mode"
+        onClick={() => setDark(!dark)}
+        className={`${focusRing} flex size-12 items-center justify-center rounded-rail-item text-text-2`}
+      >
+        <Icon aria-hidden className="size-5" />
+      </button>
+    </Tooltip>
   );
 }

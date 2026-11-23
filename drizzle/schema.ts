@@ -708,3 +708,41 @@ export const orgMembers = pgTable("org_members", {
 	pgPolicy("org_members_insert_admin", { as: "permissive", for: "insert", to: ["authenticated"] }),
 	pgPolicy("org_members_select", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
+
+export const reconstructionOrigin = pgEnum("reconstruction_origin", ["generated", "uploaded"]);
+export const reconstructionStatus = pgEnum("reconstruction_status", ["queued", "generating", "done", "failed"]);
+
+export const reconstructionImages = pgTable("reconstruction_images", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	siteId: uuid("site_id").notNull(),
+	sourcePhotoId: uuid("source_photo_id"),
+	imageUrl: text("image_url"),
+	promptText: text("prompt_text"),
+	provider: text(),
+	model: text(),
+	origin: reconstructionOrigin().default("generated").notNull(),
+	status: reconstructionStatus().default("queued").notNull(),
+	error: text(),
+	isCurrent: boolean("is_current").default(false).notNull(),
+	elementIds: uuid("element_ids").array().default([]).notNull(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index("reconstruction_images_site_id_idx").using("btree", table.siteId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({ columns: [table.siteId], foreignColumns: [sites.id], name: "reconstruction_images_site_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sourcePhotoId], foreignColumns: [assets.id], name: "reconstruction_images_source_photo_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.createdBy], foreignColumns: [profiles.id], name: "reconstruction_images_created_by_fkey" }).onDelete("set null"),
+]);
+
+export const reconstructionRegions = pgTable("reconstruction_regions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	reconstructionImageId: uuid("reconstruction_image_id").notNull(),
+	elementId: uuid("element_id").notNull(),
+	shape: jsonb().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index("reconstruction_regions_image_id_idx").using("btree", table.reconstructionImageId.asc().nullsLast().op("uuid_ops")),
+	index("reconstruction_regions_element_id_idx").using("btree", table.elementId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({ columns: [table.reconstructionImageId], foreignColumns: [reconstructionImages.id], name: "reconstruction_regions_image_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.elementId], foreignColumns: [elements.id], name: "reconstruction_regions_element_id_fkey" }).onDelete("cascade"),
+]);

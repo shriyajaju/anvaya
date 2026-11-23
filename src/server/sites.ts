@@ -48,6 +48,7 @@ export async function createSite(formData: FormData) {
         site_type: parsed.data.siteType,
         description: parsed.data.description || null,
         reconstruction_year: parsed.data.year,
+        require_review: false,
         created_by: session.userId,
       })
       .select("slug")
@@ -60,6 +61,22 @@ export async function createSite(formData: FormData) {
     if (error?.code !== "23505") throw new Error(error?.message ?? "Could not create the site");
   }
   if (!created) redirect("/sites/new?error=That%20address%20is%20already%20used");
+
+  const site = await supabase.from("sites").select("id").eq("slug", slug).eq("org_id", session.org.orgId).single();
+  if (site.data) {
+    await supabase.from("elements").insert({
+      site_id: site.data.id,
+      name: parsed.data.name,
+      kind: "group",
+      confidence: "low",
+      visible: true,
+    });
+    await supabase.from("locations").insert({
+      site_id: site.data.id,
+      name: "Entrance",
+      qr_code: `${slug}-L1`,
+    });
+  }
 
   if (session.role === "owner" || session.role === "admin") {
     const invites = z

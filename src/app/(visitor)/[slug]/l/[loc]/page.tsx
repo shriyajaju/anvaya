@@ -31,7 +31,7 @@ export default async function LocationPage({
         <div className="mt-6 flex flex-col gap-4">
           <ConfidenceChip level={element.confidence} href={`/${slug}/hdwk/${element.id}${suffix}`} />
           <p className="text-[15px] leading-6">{element.name}</p>
-          <VButton href={`/${slug}/ar/${element.id}${suffix}`}>View in AR</VButton>
+          <VButton href={`/${slug}/ar/${element.id}${suffix}`}>See the reconstruction</VButton>
           {element.kind === "group"
             ? snap.elements
                 .filter((item) => item.parentId === element.id && item.visible)

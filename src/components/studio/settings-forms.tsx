@@ -1,6 +1,7 @@
 "use client";
 
 import { Toggle } from "@/components/ui/toggle";
+import { useDarkTheme } from "@/lib/theme";
 import { archiveSite, updateProfile, updateSiteRules } from "@/server/settings";
 import { useState } from "react";
 
@@ -34,9 +35,7 @@ export function ProfileForm({ name, title, email }: { name: string; title: strin
 }
 
 export function PreferencesForm() {
-  const [dark, setDark] = useState(() =>
-    typeof document === "undefined" ? true : document.documentElement.getAttribute("data-theme") !== "light",
-  );
+  const [dark, setDark] = useDarkTheme();
   const [previewLight, setPreviewLight] = useState(() =>
     typeof window === "undefined" ? false : window.localStorage.getItem("anvaya-preview-theme") === "light",
   );

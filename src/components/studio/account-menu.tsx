@@ -2,21 +2,12 @@
 
 import { focusRing, spring, useMotionEnabled } from "@/components/ui/motion";
 import { signOut, switchOrganisation } from "@/server/auth";
+import { useDarkTheme } from "@/lib/theme";
 import * as Popover from "@radix-ui/react-popover";
 import { motion } from "framer-motion";
-import { useSyncExternalStore } from "react";
+import { Moon, Sun } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import Link from "next/link";
-
-function subscribeTheme(onStoreChange: () => void) {
-  const observer = new MutationObserver(onStoreChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-  return () => observer.disconnect();
-}
-
-function themeDark() {
-  return document.documentElement.getAttribute("data-theme") === "dark";
-}
 
 export function AccountMenu({
   name,
@@ -34,13 +25,8 @@ export function AccountMenu({
   previewToken: string | null;
 }) {
   const motionEnabled = useMotionEnabled();
-  const dark = useSyncExternalStore(subscribeTheme, themeDark, () => false);
-
-  function setTheme(nextDark: boolean) {
-    const theme = nextDark ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("anvaya-theme", theme);
-  }
+  const [dark, setTheme] = useDarkTheme();
+  const ThemeIcon = dark ? Moon : Sun;
 
   return (
     <Popover.Root>
@@ -62,9 +48,12 @@ export function AccountMenu({
               <p className="text-[15px] leading-6">{name}</p>
               {title ? <p className="text-[13px] leading-5 text-text-2">{title}</p> : null}
             </Link>
-            <div className="mt-2 flex items-center justify-between rounded-button px-2 py-2">
-              <span className="text-[13px] text-text-2">Dark theme</span>
-              <Toggle label="Dark theme" state={dark} onStateChange={setTheme} />
+            <div className="mt-2 flex items-center justify-between gap-3 rounded-button px-2 py-2">
+              <span className="flex items-center gap-2 text-[13px] text-text-1">
+                <ThemeIcon aria-hidden className="size-4 text-text-2" />
+                Dark mode
+              </span>
+              <Toggle label="Dark mode" state={dark} onStateChange={setTheme} />
             </div>
             <div className="mt-1 border-t border-border pt-2">
               <p className="px-2 text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-text-3">

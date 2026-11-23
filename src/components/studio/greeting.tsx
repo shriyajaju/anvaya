@@ -10,7 +10,7 @@ export function Greeting({ name }: { name: string }) {
     return "evening";
   });
   return (
-    <h1 className="text-[40px] font-light leading-[48px] text-text-1">
+    <h1 className="text-[clamp(28px,4vw,40px)] font-light leading-[1.2] text-text-1">
       Good {part}, {name}
     </h1>
   );

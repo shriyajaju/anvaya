@@ -57,7 +57,7 @@ function Ready({ data }: { data: PublishPageData }) {
         <Card className="mt-3">
           <p className="flex items-center gap-2 border-b border-border py-2.5 text-[15px]">
             <Check aria-hidden className={`size-4 ${data.canPublish ? "text-conf-high" : "text-conf-medium"}`} />
-            {data.blockReason ?? "Ready for an admin to publish"}
+            {data.blockReason ?? "Ready to publish"}
           </p>
           <p className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
             <span className="inline-flex items-center gap-2">

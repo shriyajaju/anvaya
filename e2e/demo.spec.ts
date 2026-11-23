@@ -21,7 +21,7 @@ test("demo script", async ({ page }) => {
   const sql = postgres(process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres", { max: 1 });
 
   await signIn(page, "A. Iyer");
-  await page.goto("/s/kanheri/reconstruct");
+  await page.goto("/s/ajanta-cave-1/reconstruct");
   await page.getByRole("button", { name: "Water cistern", exact: true }).click();
   await page.getByRole("radio", { name: "High" }).click();
   await expect(page.getByText("High confidence needs at least one linked source.")).toBeVisible();
@@ -36,7 +36,7 @@ test("demo script", async ({ page }) => {
   await page.getByRole("radio", { name: "Medium" }).click();
   await expect(page.getByText("Confidence updated")).toBeVisible();
 
-  await page.goto("/s/kanheri/review");
+  await page.goto("/s/ajanta-cave-1/review");
   await page.getByRole("button", { name: "Submit for review" }).click();
   await expect(page.getByText("In review")).toBeVisible();
 
@@ -47,7 +47,7 @@ test("demo script", async ({ page }) => {
   await expect(page.getByText("Please note the cistern source is a placeholder.")).toBeVisible();
 
   await signIn(page, "A. Iyer");
-  await page.goto("/s/kanheri/review");
+  await page.goto("/s/ajanta-cave-1/review");
   await page.getByPlaceholder("Reply...").pressSequentially("Noted. The source stays labelled as a placeholder.");
   await page.getByRole("button", { name: "Reply", exact: true }).click();
   await expect(page.getByText("Noted. The source stays labelled as a placeholder.")).toBeVisible();
@@ -66,7 +66,7 @@ test("demo script", async ({ page }) => {
   await expect(page.getByText(/Approved|Nothing is waiting/)).toBeVisible();
 
   await signIn(page, "S. Rao");
-  await page.goto("/s/kanheri/publish");
+  await page.goto("/s/ajanta-cave-1/publish");
   const version = page.getByLabel("Version name");
   await version.click();
   await page.keyboard.press("Meta+A");
@@ -76,24 +76,24 @@ test("demo script", async ({ page }) => {
   const versions = await sql<{ number: string }[]>`select number from public.versions where site_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0020' and number = '1.1'`;
   expect(versions).toHaveLength(1);
 
-  await page.goto("/s/kanheri/archive");
+  await page.goto("/s/ajanta-cave-1/archive");
   await page.getByRole("link", { name: "Compare" }).first().click();
   await expect(page.getByText("Water cistern")).toBeVisible();
   await expect(page.getByText("Nagaraju 1981")).toBeVisible();
 
   await page.context().clearCookies();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/kanheri?l=L2");
+  await page.goto("/ajanta-cave-1?l=L2");
   await page.getByRole("link", { name: "Begin exploring" }).click();
   await page.getByRole("link", { name: "Roof" }).click();
   await expect(page.getByText("Likely")).toBeVisible();
-  await expect(page.locator("model-viewer")).toBeAttached({ timeout: 15000 });
-  await expect(page.getByRole("button", { name: "Start AR" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "See the reconstruction" })).toBeVisible();
+  await expect(page.getByText(/imagined reconstruction/i)).toBeVisible();
   const how = await page.getByRole("link", { name: "How do we know?" }).first().getAttribute("href");
-  await page.goto(how ?? "/kanheri");
+  await page.goto(how ?? "/ajanta-cave-1");
   await expect(page.getByText("Beam socket survey 2026").first()).toBeVisible();
-  await expect(page.getByText("Ridge height estimated at 4.2 m")).toBeVisible();
-  await page.goto("/kanheri/about");
+  await expect(page.getByText("Ridge height estimated for demo only")).toBeVisible();
+  await page.goto("/ajanta-cave-1/about");
   const radios = page.locator("input[type=radio]");
   await radios.nth(3).check({ force: true });
   await radios.nth(8).check({ force: true });
@@ -109,11 +109,11 @@ test("demo script", async ({ page }) => {
 
   await page.context().clearCookies();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/kanheri");
+  await page.goto("/ajanta-cave-1");
   await page.waitForTimeout(500);
   await page.context().setOffline(true);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Kanheri Caves" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ajanta Cave 1" })).toBeVisible();
   await page.context().setOffline(false);
   await sql.end();
 });

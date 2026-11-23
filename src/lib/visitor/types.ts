@@ -34,6 +34,26 @@ export type VisitorElement = {
   interpretations: VisitorInterpretation[];
 };
 
+export type VisitorReconstructionRegion = {
+  id: string;
+  elementId: string;
+  shape: { x: number; y: number }[];
+};
+
+export type VisitorReconstruction = {
+  id: string;
+  imageUrl: string | null;
+  sourcePhotoUrl: string | null;
+  sourcePhotoId: string | null;
+  promptText: string | null;
+  origin: "generated" | "uploaded";
+  edgeGuideUrl: string | null;
+  wireframeUrl: string | null;
+  viewpointLabel: string | null;
+  viewpointNote: string | null;
+  regions: VisitorReconstructionRegion[];
+} | null;
+
 export type VisitorLocation = {
   id: string;
   name: string;
@@ -88,6 +108,7 @@ export type VisitorSnapshot = {
   locations: VisitorLocation[];
   elements: VisitorElement[];
   stories: VisitorStory[];
+  reconstruction: VisitorReconstruction;
 };
 
 export function visitorLabel(level: VisitorLevel) {
@@ -100,8 +121,11 @@ export function placeName(name: string) {
   return name.replace(/^L\d+\s+/, "");
 }
 
-export function visitorQuery(query: { v?: string; preview?: string }) {
-  if (query.preview) return `?preview=${encodeURIComponent(query.preview)}`;
-  if (query.v) return `?v=${encodeURIComponent(query.v)}`;
-  return "";
+export function visitorQuery(query: { v?: string; preview?: string; camera?: string }) {
+  const params = new URLSearchParams();
+  if (query.preview) params.set("preview", query.preview);
+  if (query.v) params.set("v", query.v);
+  if (query.camera === "1" || query.camera === "true") params.set("camera", "1");
+  const text = params.toString();
+  return text ? `?${text}` : "";
 }

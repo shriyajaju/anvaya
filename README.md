@@ -31,7 +31,7 @@ Seed users (development only, password `placeholder`):
 - R. Mehta, reviewer — `r.mehta@anvaya.test`
 - S. Rao, admin — `s.rao@anvaya.test`
 
-The seeded site is Kanheri Caves. Its text and models are placeholders, not a historical account.
+The seeded site is Ajanta Cave 1 (image reconstruction). Its text and images are placeholders, not a historical account. Drop hand-authored JPEGs into `public/seed-reconstructions/ajanta-cave-1/`.
 
 ## Checks
 
@@ -41,7 +41,7 @@ pnpm test
 pnpm e2e
 ```
 
-`pnpm e2e` runs `e2e/demo.spec.ts` against the local app and database. It restores the Kanheri cistern and version 1.0 before the script so the demo can publish 1.1 again.
+`pnpm e2e` runs `e2e/demo.spec.ts` against the local app and database. It restores the Ajanta Cave 1 cistern and version 1.0 before the script so the demo can publish 1.1 again.
 
 ## Deploy
 

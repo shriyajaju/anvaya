@@ -19,6 +19,7 @@ import type { ReconstructData, SceneElement, SceneTransform } from "@/server/rec
 import { motion } from "framer-motion";
 import { Box, Eye, EyeOff, MousePointer2, Move, RotateCw, Scaling, Upload } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Component, useState, type ReactNode } from "react";
 
 const SceneBuilder = dynamic(() => import("@/components/three/scene-builder").then((mod) => mod.SceneBuilder), {
@@ -398,6 +399,7 @@ function InspectorForm({ data, element, onToast }: { data: ReconstructData; elem
 }
 
 function AddElement({ open, data, onOpenChange }: { open: boolean; data: ReconstructData; onOpenChange: (open: boolean) => void }) {
+  const router = useRouter();
   const [kind, setKind] = useState<"structure" | "architectural" | "object">("structure");
   const [name, setName] = useState("");
   const [parentId, setParentId] = useState(data.elements.find((element) => element.kind === "group")?.id ?? "");
@@ -441,7 +443,10 @@ function AddElement({ open, data, onOpenChange }: { open: boolean; data: Reconst
       bytes: file?.size,
     });
     if (!saved.ok) setError(saved.error);
-    else onOpenChange(false);
+    else {
+      onOpenChange(false);
+      router.refresh();
+    }
   }
 
   return (

@@ -37,6 +37,29 @@ Deno.serve(async (request) => {
       return { name: String(code), target: `${origin}/${slug}?l=${code}` };
     }),
   ];
+  // Viewpoint QRs open the reconstruction camera overlay for the primary linked element.
+  const viewpoints = await admin
+    .from("assets")
+    .select("id, viewpoint_label")
+    .eq("site_id", body.siteId)
+    .eq("kind", "photo")
+    .not("viewpoint_label", "is", null);
+  const recon = await admin
+    .from("reconstruction_images")
+    .select("id, source_photo_id, element_ids")
+    .eq("site_id", body.siteId)
+    .eq("is_current", true)
+    .eq("status", "done")
+    .maybeSingle();
+  for (const viewpoint of viewpoints.data ?? []) {
+    const elementId = ((recon.data?.element_ids as string[] | null) ?? [])[0];
+    if (!elementId) continue;
+    if (recon.data?.source_photo_id && recon.data.source_photo_id !== viewpoint.id) continue;
+    codes.push({
+      name: `viewpoint-${String(viewpoint.id).slice(0, 8)}`,
+      target: `${origin}/${slug}/ar/${elementId}?camera=1`,
+    });
+  }
   for (const code of codes) {
     const png = await QRCode.toBuffer(code.target, { type: "png", width: 512, margin: 1 });
     const svg = await QRCode.toString(code.target, { type: "svg" });

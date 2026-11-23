@@ -1,5 +1,6 @@
--- Kanheri Caves placeholder seed (§11). Not a historical account.
+-- Ajanta Cave 1 placeholder seed (image reconstruction). Not a historical account.
 -- Citations are marked "(placeholder reference)". Version 1.0 is produced by snapshot_site.
+-- Drop hand-authored images into public/seed-reconstructions/ajanta-cave-1/ (see filenames below).
 
 do $$
 declare
@@ -10,11 +11,7 @@ declare
   v_site uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0020';
   v_period uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030';
   v_event uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0031';
-  v_remains uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041';
-  v_roof_model uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042';
-  v_lintel uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043';
-  v_frieze_model uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0044';
-  v_cistern_model uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045';
+  v_site_photo uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046';
   v_cave uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0051';
   v_north uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0052';
   v_entrance uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0053';
@@ -33,6 +30,8 @@ declare
   v_l5 uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0095';
   v_story uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa00a1';
   v_review uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa00c1';
+  v_recon_current uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa00d1';
+  v_recon_alt uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa00d2';
 begin
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -57,7 +56,7 @@ begin
     (v_rao, 'S. Rao', 'SR', 'Trust director');
 
   insert into public.organisations (id, name, slug)
-  values (v_org, 'Kanheri Caves Trust', 'kanheri-trust');
+  values (v_org, 'Ajanta Cave 1 Trust', 'ajanta-cave-1-trust');
 
   insert into public.org_members (org_id, user_id, role)
   values
@@ -70,49 +69,58 @@ begin
     reconstruction_year, require_review, managed_by, licence, created_by
   )
   values (
-    v_site, v_org, 'kanheri', 'Kanheri Caves', 'Mumbai',
-    'rock-cut Buddhist caves',
-    'Placeholder record for Kanheri Caves, Cave 3, c. 200 CE. Not a historical account.',
-    'draft', 200, true, 'S. Rao', 'Placeholder licence', v_iyer
+    v_site, v_org, 'ajanta-cave-1', 'Ajanta Cave 1', 'Ajanta, Maharashtra',
+    'rock-cut Buddhist vihara',
+    'Placeholder record for Ajanta Cave 1. Not a historical account. Reconstruction images are imagined overlays for demo use.',
+    'draft', 500, true, 'S. Rao', 'Placeholder licence', v_iyer
   );
 
   insert into public.periods (id, site_id, name, year_from, year_to, sort)
-  values (v_period, v_site, 'c. 200 CE (placeholder)', 150, 250, 0);
+  values (v_period, v_site, 'c. 5th century CE (placeholder)', 450, 550, 0);
 
   insert into public.events (id, site_id, period_id, title, year, approx, kind, description, element_ids)
   values (
-    v_event, v_site, v_period, 'Cave 3 (placeholder)', 200, true, 'phase',
+    v_event, v_site, v_period, 'Cave 1 (placeholder)', 500, true, 'phase',
     'Placeholder. Not a historical account.',
     array[v_cave]
   );
 
-  insert into public.assets (id, site_id, kind, storage_path, filename, bytes, mime, caption, uploaded_by)
+  -- Photos only (no 3D models). Files live under public/seed-reconstructions/ajanta-cave-1/.
+  insert into public.assets (
+    id, site_id, kind, storage_path, filename, bytes, mime, caption, uploaded_by,
+    viewpoint_label, viewpoint_note, edge_outline_url
+  )
   values
-    (v_remains, v_site, 'model', 'seed-models/existing-remains.glb', 'existing-remains.glb', 728, 'model/gltf-binary', 'Placeholder existing remains', v_iyer),
-    (v_roof_model, v_site, 'model', 'seed-models/roof-prism.glb', 'roof-prism.glb', 680, 'model/gltf-binary', 'Placeholder roof prism', v_iyer),
-    (v_lintel, v_site, 'model', 'seed-models/lintel.glb', 'lintel.glb', 740, 'model/gltf-binary', 'Placeholder lintel', v_iyer),
-    (v_frieze_model, v_site, 'model', 'seed-models/frieze-band.glb', 'frieze-band.glb', 736, 'model/gltf-binary', 'Placeholder frieze band', v_iyer),
-    (v_cistern_model, v_site, 'model', 'seed-models/cistern-cover.glb', 'cistern-cover.glb', 736, 'model/gltf-binary', 'Placeholder cistern cover', v_iyer);
+    (
+      v_site_photo, v_site, 'photo',
+      'seed-reconstructions/ajanta-cave-1/source-photo.jpg',
+      'source-photo.jpg', 0, 'image/jpeg',
+      'Placeholder site photograph (Ajanta Cave 1) — replace by hand',
+      v_iyer,
+      'Cave 1 façade marker',
+      'Stand on the path marker facing the porch. Match the white outline to the living rock.',
+      '/generated/edge-guides/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0020/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046.png'
+    );
 
   insert into public.elements (
     id, site_id, parent_id, name, kind, confidence, rationale, assumptions, model_asset_id, plan_x, plan_y, sort
   )
   values
-    (v_cave, v_site, null, 'Cave 3', 'group', 'medium', null, '{}', v_remains, 0.5, 0.4, 0),
+    (v_cave, v_site, null, 'Cave 1', 'group', 'medium', null, '{}', null, 0.5, 0.4, 0),
     (v_north, v_site, v_cave, 'North wall', 'architectural', 'high', null, '{}', null, 0.5, 0.2, 1),
-    (v_entrance, v_site, v_cave, 'Entrance', 'architectural', 'high', null, array['Door leaves were timber, now lost'], v_lintel, 0.5, 0.75, 2),
+    (v_entrance, v_site, v_cave, 'Entrance', 'architectural', 'high', null, array['Door leaves were timber, now lost'], null, 0.5, 0.75, 2),
     (v_roof, v_site, v_cave, 'Roof', 'architectural', 'medium',
-      'Roof form inferred from surviving beam sockets and comparison with Cave 3 at Karla. No direct evidence of the ridge height.',
-      array['Ridge height estimated at 4.2 m', 'Timber species unknown'],
-      v_roof_model, 0.5, 0.45, 3),
-    (v_frieze, v_site, v_cave, 'Decorative frieze', 'architectural', 'low', null, '{}', v_frieze_model, 0.55, 0.7, 4),
-    (v_cistern, v_site, v_cave, 'Water cistern', 'object', 'low', null, '{}', v_cistern_model, 0.2, 0.3, 5);
+      'Roof form inferred from surviving sockets and comparative halls. No direct evidence of the ridge height.',
+      array['Ridge height estimated for demo only', 'Timber species unknown'],
+      null, 0.5, 0.45, 3),
+    (v_frieze, v_site, v_cave, 'Decorative frieze', 'architectural', 'low', null, '{}', null, 0.55, 0.7, 4),
+    (v_cistern, v_site, v_cave, 'Water cistern', 'object', 'low', null, '{}', null, 0.2, 0.3, 5);
 
   insert into public.evidence (id, site_id, kind, title, citation, date_label, strength, added_by)
   values
     (v_ev1, v_site, 'physical', 'Beam socket survey 2026', 'Beam socket survey 2026 (placeholder reference)', '2026', 'high', v_iyer),
     (v_ev2, v_site, 'historical', 'Fergusson & Burgess 1880 pl. 12', 'Fergusson & Burgess 1880 pl. 12 (placeholder reference)', '1880', 'medium', v_iyer),
-    (v_ev3, v_site, 'comparative', 'Cave 3 at Karla roof profile', 'Cave 3 at Karla roof profile (placeholder reference)', null, 'medium', v_iyer),
+    (v_ev3, v_site, 'comparative', 'Comparable rock-cut hall roof profile', 'Comparable rock-cut hall roof profile (placeholder reference)', null, 'medium', v_iyer),
     (v_ev4, v_site, 'visual', 'Site photograph 1962', 'Site photograph 1962 (placeholder reference)', '1962', 'high', v_iyer),
     (v_ev5, v_site, 'scholarly', 'Nagaraju 1981', 'Nagaraju 1981 (placeholder reference)', '1981', 'low', v_iyer);
 
@@ -131,20 +139,20 @@ begin
 
   insert into public.interpretations (site_id, element_id, label, summary, confidence, selected, evidence_ids)
   values
-    (v_site, v_roof, 'Pitched timber ridge ~4.2 m', 'Placeholder interpretation. Not a historical account.', 'medium', true, array[v_ev1, v_ev2, v_ev3]),
+    (v_site, v_roof, 'Pitched timber ridge (placeholder)', 'Placeholder interpretation. Not a historical account.', 'medium', true, array[v_ev1, v_ev2, v_ev3]),
     (v_site, v_roof, 'Flat timber on brackets', 'Placeholder interpretation. Not a historical account.', 'low', false, '{}');
 
   insert into public.locations (id, site_id, name, plan_x, plan_y, primary_element_id, qr_code)
   values
-    (v_l1, v_site, 'L1 Entrance', 0.5, 0.8, v_entrance, 'kanheri-L1'),
-    (v_l2, v_site, 'L2 Cave 3', 0.5, 0.5, v_cave, 'kanheri-L2'),
-    (v_l3, v_site, 'L3 Cave 3 interior', 0.45, 0.35, v_north, 'kanheri-L3'),
-    (v_l4, v_site, 'L4 Water cistern', 0.2, 0.3, v_cistern, 'kanheri-L4'),
-    (v_l5, v_site, 'L5 Viewpoint path', 0.8, 0.85, null, 'kanheri-L5');
+    (v_l1, v_site, 'L1 Entrance', 0.5, 0.8, v_entrance, 'ajanta-cave-1-L1'),
+    (v_l2, v_site, 'L2 Cave 1', 0.5, 0.5, v_cave, 'ajanta-cave-1-L2'),
+    (v_l3, v_site, 'L3 Cave 1 interior', 0.45, 0.35, v_north, 'ajanta-cave-1-L3'),
+    (v_l4, v_site, 'L4 Water cistern', 0.2, 0.3, v_cistern, 'ajanta-cave-1-L4'),
+    (v_l5, v_site, 'L5 Viewpoint path', 0.8, 0.85, null, 'ajanta-cave-1-L5');
 
   insert into public.stories (id, site_id, title, category, summary, status, duration_s, sort)
   values (
-    v_story, v_site, 'Daily life at Kanheri', 'daily life',
+    v_story, v_site, 'Daily life at Ajanta Cave 1', 'daily life',
     'Placeholder story. Not a historical account.', 'published', 180, 0
   );
 
@@ -157,7 +165,41 @@ begin
     (v_story, 'Viewpoint', v_l5, 'Placeholder. This step is not a historical account.', null, 'arrival', 4);
 
   insert into public.condition (site_id, state, notes, surveyed_at, survival)
-  values (v_site, 'fair', 'Placeholder survey note.', '2026-01-01', '{"cave3":"partial"}'::jsonb);
+  values (v_site, 'fair', 'Placeholder survey note.', '2026-01-01', '{"cave1":"partial"}'::jsonb);
+
+  -- Uploaded reconstructions (hand-authored). Replace the JPEG files; keep these paths.
+  insert into public.reconstruction_images (
+    id, site_id, source_photo_id, image_url, prompt_text, provider, model, origin, status, is_current, element_ids, created_by,
+    edge_guide_url, wireframe_url
+  )
+  values
+    (
+      v_recon_current, v_site, v_site_photo,
+      '/seed-reconstructions/ajanta-cave-1/reconstruction-01.jpg',
+      null, null, null, 'uploaded', 'done', true,
+      array[v_roof, v_entrance, v_north], v_iyer,
+      '/generated/edge-guides/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0020/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046.png',
+      '/seed-reconstructions/ajanta-cave-1/wireframe-screen.png'
+    ),
+    (
+      v_recon_alt, v_site, v_site_photo,
+      '/seed-reconstructions/ajanta-cave-1/reconstruction-02.jpg',
+      null, null, null, 'uploaded', 'done', false,
+      array[v_roof, v_entrance], v_iyer,
+      null, null
+    );
+
+  -- Two example regions on the current reconstruction.
+  insert into public.reconstruction_regions (reconstruction_image_id, element_id, shape)
+  values
+    (
+      v_recon_current, v_roof,
+      '[{"x":18,"y":6},{"x":82,"y":6},{"x":80,"y":34},{"x":20,"y":34}]'::jsonb
+    ),
+    (
+      v_recon_current, v_entrance,
+      '[{"x":36,"y":52},{"x":64,"y":52},{"x":64,"y":90},{"x":36,"y":90}]'::jsonb
+    );
 
   insert into public.reviews (id, site_id, status, submitted_by, decided_by, decided_at, content_sig)
   values (
@@ -168,5 +210,5 @@ begin
   values (v_review, 'element', v_roof, 'approved');
 
   perform set_config('request.jwt.claim.sub', v_rao::text, true);
-  perform public.publish_site(v_site, '1.0', 'Placeholder publication of Kanheri Caves.');
+  perform public.publish_site(v_site, '1.0', 'Placeholder publication of Ajanta Cave 1.');
 end $$;

@@ -91,7 +91,7 @@ function SiteFrameBody({
         className={
           wide
             ? "px-6 pb-10"
-            : "px-6 pb-10 min-[1100px]:grid min-[1100px]:grid-cols-2 min-[1100px]:items-start min-[1100px]:gap-8 min-[1100px]:pr-6"
+            : "px-6 pb-10 min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,600px)_minmax(240px,1fr)] min-[1100px]:items-start min-[1100px]:gap-8 min-[1100px]:pr-6"
         }
       >
         <div className={wide ? "min-w-0" : "min-w-0 min-[1100px]:max-w-[600px]"}>

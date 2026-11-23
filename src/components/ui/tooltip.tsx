@@ -2,7 +2,7 @@
 
 import { focusRing } from "@/components/ui/motion";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export function Tooltip({
   label,
@@ -13,6 +13,9 @@ export function Tooltip({
   children: ReactNode;
   side?: "top" | "right" | "bottom" | "left";
 }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  if (!ready) return children;
   return (
     <TooltipPrimitive.Provider delayDuration={200}>
       <TooltipPrimitive.Root>
@@ -20,8 +23,10 @@ export function Tooltip({
         <TooltipPrimitive.Portal>
           <TooltipPrimitive.Content
             side={side}
+            align="center"
             sideOffset={8}
-            className="rounded-button bg-primary px-2.5 py-1.5 text-[13px] leading-5 text-on-primary shadow-float"
+            avoidCollisions={false}
+            className="z-[80] rounded-button bg-primary px-2.5 py-1.5 text-[13px] leading-5 text-on-primary shadow-float"
           >
             {label}
           </TooltipPrimitive.Content>

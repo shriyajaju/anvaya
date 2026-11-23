@@ -3,7 +3,7 @@ import "server-only";
 import { verifyPreviewToken } from "@/lib/preview-token";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { VisitorElement, VisitorSnapshot, VisitorStory } from "@/lib/visitor/types";
+import type { VisitorElement, VisitorReconstruction, VisitorSnapshot, VisitorStory } from "@/lib/visitor/types";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -119,6 +119,45 @@ function normalize(
     }),
     elements,
     stories,
+    reconstruction: toReconstruction(raw.reconstruction, meta),
+  };
+}
+
+function toReconstruction(
+  raw: unknown,
+  meta: { preview: boolean; files: Map<string, { filename?: string; storage_path?: string; kind?: string }>; siteId: string },
+): VisitorReconstruction {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const source = row.source_photo_id ? meta.files.get(String(row.source_photo_id)) : undefined;
+  let imageUrl = (row.image_url as string | null) ?? null;
+  if (imageUrl && !meta.preview && imageUrl.includes("/storage/v1/object/")) {
+    // Keep published URL as stored in the snapshot.
+  }
+  const sourcePhotoUrl =
+    (row.source_photo_url as string | null) ??
+    assetUrl(source, meta) ??
+    (typeof row.source_photo_id === "string" ? null : null);
+  return {
+    id: String(row.id),
+    imageUrl,
+    sourcePhotoUrl,
+    sourcePhotoId: (row.source_photo_id as string | null) ?? null,
+    promptText: (row.prompt_text as string | null) ?? null,
+    origin: row.origin === "uploaded" ? "uploaded" : "generated",
+    edgeGuideUrl: (row.edge_guide_url as string | null) ?? null,
+    wireframeUrl: (row.wireframe_url as string | null) ?? null,
+    viewpointLabel: (row.viewpoint_label as string | null) ?? null,
+    viewpointNote: (row.viewpoint_note as string | null) ?? null,
+    regions: ((row.regions ?? []) as Record<string, unknown>[]).map((region) => ({
+      id: String(region.id),
+      elementId: String(region.element_id),
+      shape: Array.isArray(region.shape)
+        ? (region.shape as { x?: number; y?: number }[])
+            .filter((point) => typeof point?.x === "number" && typeof point?.y === "number")
+            .map((point) => ({ x: Number(point.x), y: Number(point.y) }))
+        : [],
+    })),
   };
 }
 
@@ -193,6 +232,9 @@ function assetUrl(
     return `${publicStorage}/storage/v1/object/public/published/${meta.siteId}/${asset.filename}`;
   }
   if (asset.storage_path?.startsWith("seed-models/")) return `/${asset.storage_path}`;
+  if (asset.storage_path?.startsWith("seed-reconstructions/") || asset.storage_path?.startsWith("site-covers/")) {
+    return `/${asset.storage_path}`;
+  }
   return null;
 }
 

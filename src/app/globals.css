@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 html {
+  width: 100%;
+  height: 100%;
   background: var(--color-page);
   color: var(--color-text-1);
   font-family: var(--font-sans);
@@ -17,7 +19,9 @@ html {
 }
 
 body {
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   background: var(--color-page);
   color: var(--color-text-1);
 }

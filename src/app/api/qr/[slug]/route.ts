@@ -21,6 +21,28 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
       return { label: location.name as string, url: `${origin}/${slug}?l=${code}` };
     }),
   ];
+  const viewpoints = await supabase
+    .from("assets")
+    .select("id, viewpoint_label")
+    .eq("site_id", site.data.id)
+    .eq("kind", "photo")
+    .not("viewpoint_label", "is", null);
+  const recon = await supabase
+    .from("reconstruction_images")
+    .select("source_photo_id, element_ids")
+    .eq("site_id", site.data.id)
+    .eq("is_current", true)
+    .eq("status", "done")
+    .maybeSingle();
+  for (const viewpoint of viewpoints.data ?? []) {
+    const elementId = ((recon.data?.element_ids as string[] | null) ?? [])[0];
+    if (!elementId) continue;
+    if (recon.data?.source_photo_id && recon.data.source_photo_id !== viewpoint.id) continue;
+    codes.push({
+      label: (viewpoint.viewpoint_label as string) || "Viewpoint",
+      url: `${origin}/${slug}/ar/${elementId}?camera=1`,
+    });
+  }
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const page = pdf.addPage([595, 842]);

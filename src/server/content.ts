@@ -50,7 +50,7 @@ export async function saveCondition(input: z.infer<typeof conditionSchema>) {
 const assetSchema = z.object({
   siteId: z.string().uuid(),
   slug: z.string().min(1),
-  kind: z.enum(["photo", "model", "drawing", "document"]),
+  kind: z.enum(["photo", "model", "drawing", "document", "audio"]),
   storagePath: z.string().min(3),
   filename: z.string().min(1).max(180),
   bytes: z.number().int().nonnegative(),

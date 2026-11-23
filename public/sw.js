@@ -25,7 +25,8 @@ self.addEventListener("fetch", (event) => {
     (site && (url.pathname === `/${site}` || url.pathname.startsWith(`/${site}/`))) ||
     url.pathname.startsWith("/api/visitor/") ||
     url.pathname.includes("/storage/v1/object/public/published/") ||
-    url.pathname.startsWith("/seed-models/");
+    url.pathname.startsWith("/seed-models/") ||
+    url.pathname.startsWith("/seed-reconstructions/");
   if (!cacheable) return;
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {

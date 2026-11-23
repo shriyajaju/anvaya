@@ -25,7 +25,7 @@ async function asUser<T>(
 describe("database rules", () => {
   beforeAll(async () => {
     const [{ ok }] = await sql<{ ok: number }[]>`
-      select 1 as ok from public.sites where slug = 'kanheri'
+      select 1 as ok from public.sites where slug = 'ajanta-cave-1'
     `;
     expect(ok).toBe(1);
   });

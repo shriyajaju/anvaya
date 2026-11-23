@@ -250,10 +250,17 @@ async function loadDiff(supabase: Awaited<ReturnType<typeof createClient>>, site
 }
 
 async function loadChecklist(supabase: Awaited<ReturnType<typeof createClient>>, siteId: string): Promise<ChecklistItem[]> {
-  const [elements, links, steps] = await Promise.all([
+  const [elements, links, steps, reconstruction] = await Promise.all([
     supabase.from("elements").select("id, kind, confidence, rationale, assumptions").eq("site_id", siteId),
     supabase.from("element_evidence").select("element_id"),
     supabase.from("story_steps").select("body, source_ids, story_id"),
+    supabase
+      .from("reconstruction_images")
+      .select("id")
+      .eq("site_id", siteId)
+      .eq("is_current", true)
+      .eq("status", "done")
+      .maybeSingle(),
   ]);
   if (elements.error) throw new Error(elements.error.message);
   const linked = new Set((links.data ?? []).map((row) => row.element_id as string));
@@ -262,6 +269,9 @@ async function loadChecklist(supabase: Awaited<ReturnType<typeof createClient>>,
     (await supabase.from("stories").select("id").eq("site_id", siteId)).data?.map((row) => row.id as string) ?? [],
   );
   const siteSteps = (steps.data ?? []).filter((step) => storyIds.has(step.story_id as string));
+  const regions = reconstruction.data?.id
+    ? await supabase.from("reconstruction_regions").select("id").eq("reconstruction_image_id", reconstruction.data.id)
+    : { data: [] as { id: string }[] };
   return [
     { label: "Evidence linked to every element", missing: concrete.filter((element) => !linked.has(element.id as string)).length },
     { label: "Confidence rated with a rationale", missing: concrete.filter((element) => !String(element.rationale ?? "").trim()).length },
@@ -276,6 +286,14 @@ async function loadChecklist(supabase: Awaited<ReturnType<typeof createClient>>,
     {
       label: "Sources cited",
       missing: siteSteps.filter((step) => String(step.body ?? "").trim() && ((step.source_ids as string[] | null) ?? []).length === 0).length,
+    },
+    {
+      label: "Current reconstruction image ready",
+      missing: reconstruction.data ? 0 : 1,
+    },
+    {
+      label: "At least one region linked on the reconstruction",
+      missing: (regions.data ?? []).length > 0 ? 0 : 1,
     },
   ];
 }

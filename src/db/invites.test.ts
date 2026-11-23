@@ -15,7 +15,7 @@ class Rollback extends Error {
 
 describe("pending invites", () => {
   beforeAll(async () => {
-    const [{ ok }] = await sql<{ ok: number }[]>`select 1 as ok from public.sites where slug = 'kanheri'`;
+    const [{ ok }] = await sql<{ ok: number }[]>`select 1 as ok from public.sites where slug = 'ajanta-cave-1'`;
     expect(ok).toBe(1);
   });
 

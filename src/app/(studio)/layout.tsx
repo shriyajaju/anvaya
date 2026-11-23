@@ -36,7 +36,7 @@ export default async function StudioLayout({
     : 0;
 
   return (
-    <div className="min-h-screen bg-page pb-[88px] text-text-1 min-[1100px]:pb-0 min-[1100px]:pl-[120px]">
+    <div className="fixed inset-0 bg-page text-text-1">
       <Rail
         name={session.profile.name}
         initials={session.profile.initials ?? "AN"}
@@ -50,7 +50,9 @@ export default async function StudioLayout({
         siteSlug={previewToken ? slug : null}
         previewToken={previewToken}
       />
-      {children}
+      <div className="h-full overflow-y-auto overflow-x-hidden pb-[88px] min-[1100px]:pb-0 min-[1100px]:pl-[120px]">
+        {children}
+      </div>
     </div>
   );
 }

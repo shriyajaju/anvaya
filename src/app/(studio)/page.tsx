@@ -36,8 +36,8 @@ export default async function StudioHomePage() {
   const current = board.continueSite;
 
   return (
-    <div className="min-[1100px]:grid min-[1100px]:grid-cols-2 min-[1100px]:items-start">
-      <div className="flex max-w-[600px] flex-col gap-8 px-6 py-12">
+    <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,600px)_minmax(240px,1fr)] min-[1100px]:items-start">
+      <div className="flex w-full max-w-[600px] flex-col gap-8 px-6 py-8 min-[1100px]:px-0 min-[1100px]:py-12">
         <div>
           <Greeting name={session.profile.name} />
           <p className="mt-2 text-[15px] leading-6 text-text-2">{summary}</p>
@@ -45,20 +45,20 @@ export default async function StudioHomePage() {
 
         <section className="flex flex-col gap-3">
           <h2 className="text-[11px] font-medium uppercase leading-4 tracking-[0.08em] text-text-2">Start</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <Link href="/sites/new" className="block">
-              <Card className="relative h-[120px] overflow-hidden">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Link href="/sites/new" className="block min-w-0">
+              <Card padding="None" className="relative h-[120px] overflow-hidden">
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -right-4 -top-14 block size-[200px] bg-contain bg-no-repeat"
+                  className="pointer-events-none absolute left-[102px] top-[-62px] block size-[120px] bg-contain bg-no-repeat"
                   style={{ backgroundImage: "url(/blobs/violet-glow.svg)" }}
                 />
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -right-10 -top-6 block size-[200px] bg-contain bg-no-repeat"
+                  className="pointer-events-none absolute left-[138px] top-[-20px] block size-[88px] bg-contain bg-no-repeat"
                   style={{ backgroundImage: "url(/blobs/pink-glow.svg)" }}
                 />
-                <span className="flex h-[88px] flex-col justify-between">
+                <span className="flex h-full flex-col justify-between px-5 py-4">
                   <IconTile>
                     <Home className="size-5" />
                   </IconTile>
@@ -66,9 +66,9 @@ export default async function StudioHomePage() {
                 </span>
               </Card>
             </Link>
-            <Link href={current ? `/s/${current.slug}/evidence` : "/sites"} className="block">
-              <Card className="h-[120px]">
-                <span className="flex h-[88px] flex-col justify-between">
+            <Link href={current ? `/s/${current.slug}/evidence` : "/sites"} className="block min-w-0">
+              <Card padding="None" className="h-[120px]">
+                <span className="flex h-full flex-col justify-between px-5 py-4">
                   <IconTile>
                     <FileText className="size-5" />
                   </IconTile>
@@ -76,9 +76,9 @@ export default async function StudioHomePage() {
                 </span>
               </Card>
             </Link>
-            <Link href={current ? `/s/${current.slug}/${current.step}` : "/sites"} className="block">
-              <Card className="h-[120px]">
-                <span className="flex h-[88px] flex-col justify-between">
+            <Link href={current ? `/s/${current.slug}/${current.step}` : "/sites"} className="block min-w-0">
+              <Card padding="None" className="h-[120px]">
+                <span className="flex h-full flex-col justify-between px-5 py-4">
                   <IconTile>
                     <FolderOpen className="size-5" />
                   </IconTile>
@@ -145,8 +145,8 @@ export default async function StudioHomePage() {
       </div>
 
       {current ? (
-        <div className="hidden px-6 py-6 min-[1100px]:block">
-          <div className="sticky top-6 h-[calc(100vh-48px)]">
+        <div className="hidden min-w-0 px-6 py-6 min-[1100px]:block">
+          <div className="sticky top-6 h-[calc(100dvh-48px)]">
             <PreviewPanel
               slug={current.slug}
               name={current.name}

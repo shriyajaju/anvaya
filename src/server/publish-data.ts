@@ -75,9 +75,12 @@ export async function publishPage(siteId: string, slug: string, role: string | n
   );
   const latest = review.data;
   let blockReason: string | null = null;
-  if (role !== "admin" && role !== "owner") blockReason = "Only an Admin can publish.";
+  const requireReview = site.data?.require_review !== false;
+  if (role === "viewer" || role === "reviewer") blockReason = "You can view this site, not publish it.";
+  else if (requireReview && role !== "admin" && role !== "owner") blockReason = "This site requires review, then an admin to publish.";
   else if (!allowed.data) {
-    if (!latest || latest.status !== "approved") blockReason = "Submit this site for review and wait for approval.";
+    if (!requireReview) blockReason = "This site cannot be published yet.";
+    else if (!latest || latest.status !== "approved") blockReason = "Submit this site for review and wait for approval.";
     else if (latest.content_sig !== signature.data) blockReason = "Changed since last approval — resubmit";
     else blockReason = "This site cannot be published yet.";
   }
@@ -204,6 +207,7 @@ function sceneSide(
     };
   });
   const concrete = elements.filter((element) => element.kind !== "group");
+  const reconstruction = (snap as { reconstruction?: { image_url?: string | null } }).reconstruction;
   return {
     id: row.id,
     number: row.number,
@@ -211,6 +215,7 @@ function sceneSide(
     elements,
     high: concrete.filter((element) => element.confidence === "high").length,
     total: concrete.length,
+    imageUrl: reconstruction?.image_url ?? null,
   };
 }
 
