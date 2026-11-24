@@ -1,21 +1,56 @@
 "use client";
 
 import { DEV_ACCOUNTS } from "@/lib/auth/account";
-import { requestMagicLink, signInAsDev, signInWithGoogle } from "@/server/auth";
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/browser";
+import { requestMagicLink, signInAllowlisted, signInAsDev, signInWithGoogle } from "@/server/auth";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function LoginForm({
   error,
   next,
   sent,
+  allowlist = [],
 }: {
   error?: string;
   next?: string;
   sent: boolean;
+  allowlist?: string[];
 }) {
+  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(sent ? "Check your email for a sign-in link." : null);
   const [formError, setFormError] = useState<string | null>(error ?? null);
+
+  // Supabase sometimes returns the magic-link session in the URL hash on /login.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash.includes("access_token")) return;
+    const hashParams = new URLSearchParams(hash);
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    if (!accessToken || !refreshToken) return;
+
+    setMessage("Signing you in…");
+    void (async () => {
+      try {
+        const supabase = createClient();
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (sessionError) {
+          setFormError(sessionError.message);
+          return;
+        }
+        window.history.replaceState({}, "", window.location.pathname);
+        router.replace(next && next.startsWith("/") ? next : "/");
+        router.refresh();
+      } catch (err) {
+        setFormError(err instanceof Error ? err.message : "Could not sign in");
+      }
+    })();
+  }, [next, router]);
 
   return (
     <section className="w-full max-w-[440px] rounded-card border border-border bg-surface px-10 py-12 shadow-card">
@@ -92,6 +127,28 @@ export function LoginForm({
         New here? <span className="font-medium text-accent">Create an organisation</span>
       </p>
       <p className="pt-10 text-center text-[13px] text-text-3">Terms · Privacy · Support</p>
+
+      {allowlist.length > 0 ? (
+        <div className="mt-8 border-t border-border pt-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3">
+            Allowed access
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            {allowlist.map((email) => (
+              <form key={email} action={signInAllowlisted}>
+                {next ? <input type="hidden" name="next" value={next} /> : null}
+                <input type="hidden" name="email" value={email} />
+                <button
+                  type="submit"
+                  className="flex h-10 w-full items-center justify-center rounded-button border border-border text-[13px] text-text-1"
+                >
+                  Continue as {email}
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {process.env.NODE_ENV === "development" ? (
         <div className="mt-8 border-t border-border pt-6">

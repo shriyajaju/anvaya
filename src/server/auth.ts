@@ -8,6 +8,7 @@ import {
   ORG_COOKIE,
   ORGANISATION_KINDS,
   destinationAfterAuth,
+  isAllowlistedEmail,
   slugify,
   type InviteRole,
   type OrgRole,
@@ -61,7 +62,7 @@ export async function requestMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
-      emailRedirectTo: `${studioUrl()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      emailRedirectTo: `${studioUrl()}/auth/confirm${next ? `?next=${encodeURIComponent(next)}` : ""}`,
       shouldCreateUser: true,
     },
   });
@@ -75,7 +76,7 @@ export async function signInWithGoogle(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${studioUrl()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      redirectTo: `${studioUrl()}/auth/confirm${next ? `?next=${encodeURIComponent(next)}` : ""}`,
     },
   });
   if (error || !data.url) {
@@ -84,15 +85,7 @@ export async function signInWithGoogle(formData: FormData) {
   redirect(data.url);
 }
 
-export async function signInAsDev(formData: FormData) {
-  if (process.env.NODE_ENV !== "development") {
-    redirect("/login?error=Development%20sign-in%20is%20unavailable");
-  }
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!DEV_EMAILS.has(email)) {
-    redirect("/login?error=Unknown%20development%20account");
-  }
-
+async function signInWithAdminMagicLink(email: string, next: string | null = "/") {
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.generateLink({
     type: "magiclink",
@@ -112,7 +105,32 @@ export async function signInAsDev(formData: FormData) {
   }
 
   const session = await getSession();
-  redirect(destinationAfterAuth({ memberships: session?.organisations.length ?? 0, next: "/" }));
+  redirect(
+    destinationAfterAuth({
+      memberships: session?.organisations.length ?? 0,
+      next: next ?? "/",
+    }),
+  );
+}
+
+export async function signInAsDev(formData: FormData) {
+  if (process.env.NODE_ENV !== "development") {
+    redirect("/login?error=Development%20sign-in%20is%20unavailable");
+  }
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!DEV_EMAILS.has(email)) {
+    redirect("/login?error=Unknown%20development%20account");
+  }
+  await signInWithAdminMagicLink(email, safeNext(formData.get("next")) ?? "/");
+}
+
+/** One-click sign-in for AUTH_ALLOWLIST emails (production demo access). */
+export async function signInAllowlisted(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!isAllowlistedEmail(email)) {
+    redirect("/login?error=This%20email%20is%20not%20allowlisted");
+  }
+  await signInWithAdminMagicLink(email, safeNext(formData.get("next")) ?? "/");
 }
 
 export async function signOut() {

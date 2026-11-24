@@ -1,4 +1,4 @@
-import { destinationAfterAuth } from "@/lib/auth/account";
+import { authAllowlist, destinationAfterAuth } from "@/lib/auth/account";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
@@ -16,7 +16,12 @@ export default async function LoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-page px-6 py-16">
-      <LoginForm error={params.error} next={params.next} sent={params.sent === "1"} />
+      <LoginForm
+        error={params.error}
+        next={params.next}
+        sent={params.sent === "1"}
+        allowlist={authAllowlist()}
+      />
     </main>
   );
 }

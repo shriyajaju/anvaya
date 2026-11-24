@@ -21,6 +21,18 @@ export const DEV_ACCOUNTS = [
   { email: "s.rao@anvaya.test", name: "S. Rao" },
 ] as const;
 
+/** Comma-separated emails in AUTH_ALLOWLIST that may use one-click studio sign-in in production. */
+export function authAllowlist(): string[] {
+  return (process.env.AUTH_ALLOWLIST ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isAllowlistedEmail(email: string): boolean {
+  return authAllowlist().includes(email.trim().toLowerCase());
+}
+
 export function canManageMembers(role: OrgRole | null): boolean {
   return role === "owner" || role === "admin";
 }
