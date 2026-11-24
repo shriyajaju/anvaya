@@ -39,16 +39,13 @@ function ConfirmInner() {
           return;
         }
         router.replace(next.startsWith("/") ? next : "/");
+        router.refresh();
         return;
       }
 
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          router.replace(`/login?error=${encodeURIComponent(error.message)}`);
-          return;
-        }
-        router.replace(next.startsWith("/") ? next : "/");
+        // Prefer the server callback for PKCE (code verifier lives in httpOnly cookies).
+        window.location.replace(`/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent(next)}`);
         return;
       }
 
@@ -62,6 +59,7 @@ function ConfirmInner() {
           return;
         }
         router.replace(next.startsWith("/") ? next : "/");
+        router.refresh();
         return;
       }
 

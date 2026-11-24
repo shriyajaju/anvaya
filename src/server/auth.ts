@@ -62,7 +62,7 @@ export async function requestMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
-      emailRedirectTo: `${studioUrl()}/auth/confirm${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      emailRedirectTo: `${studioUrl()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
       shouldCreateUser: true,
     },
   });
@@ -113,11 +113,12 @@ export async function signInWithGoogle(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${studioUrl()}/auth/confirm${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      redirectTo: `${studioUrl()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      skipBrowserRedirect: false,
     },
   });
   if (error || !data.url) {
-    redirect(`/login?error=${encodeURIComponent(error?.message ?? "SSO sign-in is unavailable")}`);
+    redirect(`/login?error=${encodeURIComponent(error?.message ?? "Google sign-in is unavailable")}`);
   }
   redirect(data.url);
 }

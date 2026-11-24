@@ -6,6 +6,17 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
 
+  // OAuth / magic-link often lands on Site URL (/) with ?code=…
+  // Never send that to /login without the code — forward to the callback instead.
+  const code = request.nextUrl.searchParams.get("code");
+  const tokenHash = request.nextUrl.searchParams.get("token_hash");
+  const onAuthRoute = request.nextUrl.pathname.startsWith("/auth/");
+  if ((code || tokenHash) && !onAuthRoute) {
+    const callback = request.nextUrl.clone();
+    callback.pathname = "/auth/callback";
+    return NextResponse.redirect(callback);
+  }
+
   let supabaseResponse = NextResponse.next({
     request: { headers: requestHeaders },
   });
