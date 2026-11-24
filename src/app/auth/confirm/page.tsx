@@ -11,15 +11,16 @@ function ConfirmInner() {
 
   useEffect(() => {
     const next = params.get("next") || "/";
-    let supabase: ReturnType<typeof createClient>;
-    try {
-      supabase = createClient();
-    } catch {
-      setMessage("Auth is not configured.");
-      return;
-    }
 
     async function finish() {
+      let supabase: ReturnType<typeof createClient>;
+      try {
+        supabase = createClient();
+      } catch {
+        router.replace("/login?error=Auth%20is%20not%20configured");
+        return;
+      }
+
       const hash = typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : "";
       const hashParams = new URLSearchParams(hash);
       const accessToken = hashParams.get("access_token");
@@ -34,7 +35,6 @@ function ConfirmInner() {
           refresh_token: refreshToken,
         });
         if (error) {
-          setMessage(error.message);
           router.replace(`/login?error=${encodeURIComponent(error.message)}`);
           return;
         }
@@ -45,7 +45,6 @@ function ConfirmInner() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          setMessage(error.message);
           router.replace(`/login?error=${encodeURIComponent(error.message)}`);
           return;
         }
@@ -59,7 +58,6 @@ function ConfirmInner() {
           type: type as "magiclink" | "email" | "signup" | "invite" | "recovery" | "email_change",
         });
         if (error) {
-          setMessage(error.message);
           router.replace(`/login?error=${encodeURIComponent(error.message)}`);
           return;
         }
@@ -67,7 +65,6 @@ function ConfirmInner() {
         return;
       }
 
-      // No tokens in this request — send user back to login with a clear hint.
       router.replace("/login?error=Sign-in%20link%20was%20missing%20tokens.%20Request%20a%20new%20email.");
     }
 

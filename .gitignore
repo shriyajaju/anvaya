@@ -40,3 +40,5 @@ dist
 dist-ssr
 *.local
 .vercel
+.vercel-deploy.env
+.env*

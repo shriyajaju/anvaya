@@ -2,27 +2,33 @@
 
 import { DEV_ACCOUNTS } from "@/lib/auth/account";
 import { createClient } from "@/lib/supabase/browser";
-import { requestMagicLink, signInAllowlisted, signInAsDev, signInWithGoogle } from "@/server/auth";
+import {
+  requestPasswordReset,
+  signInAllowlisted,
+  signInAsDev,
+  signInWithGoogle,
+  signInWithPassword,
+} from "@/server/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function LoginForm({
   error,
   next,
-  sent,
   allowlist = [],
 }: {
   error?: string;
   next?: string;
-  sent: boolean;
+  sent?: boolean;
   allowlist?: string[];
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<string | null>(sent ? "Check your email for a sign-in link." : null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(error ?? null);
+  const [email, setEmail] = useState("");
 
-  // Supabase sometimes returns the magic-link session in the URL hash on /login.
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash.includes("access_token")) return;
@@ -31,7 +37,6 @@ export function LoginForm({
     const refreshToken = hashParams.get("refresh_token");
     if (!accessToken || !refreshToken) return;
 
-    setMessage("Signing you in…");
     void (async () => {
       try {
         const supabase = createClient();
@@ -53,34 +58,35 @@ export function LoginForm({
   }, [next, router]);
 
   return (
-    <section className="w-full max-w-[440px] rounded-card border border-border bg-surface px-10 py-12 shadow-card">
-      <p className="text-[20px] font-semibold tracking-[0.08em] text-text-1">ANVAYA</p>
-      <div className="pt-10">
-        <h1 className="text-[40px] font-light leading-[1.12] tracking-[-0.02em] text-text-1">
+    <div className="relative flex w-full max-w-[400px] flex-col">
+      <p className="w-full text-[20px] font-semibold tracking-[0.08em] text-[#121212]">ANVAYA</p>
+
+      <div className="flex w-full flex-col gap-2.5 pt-10">
+        <h1 className="w-full text-[40px] font-light leading-[1.12] tracking-[-0.02em] text-[#121212]">
           Welcome back
         </h1>
-        <p className="mt-2.5 text-[16px] leading-[1.5] text-text-2">
+        <p className="w-full text-[16px] leading-[1.5] text-[#778188]">
           Sign in to your heritage workspace.
         </p>
       </div>
 
       <form
-        className="pt-8"
+        className="flex w-full flex-col gap-4 pt-8"
         action={async (formData) => {
           setPending(true);
           setFormError(null);
-          const result = await requestMagicLink(formData);
+          setMessage(null);
+          const result = await signInWithPassword(formData);
           setPending(false);
-          if (!result.ok) {
+          if (result && !result.ok) {
             setFormError(result.error);
-            return;
           }
-          setMessage("Check your email for a sign-in link.");
         }}
       >
         {next ? <input type="hidden" name="next" value={next} /> : null}
-        <label className="flex h-[72px] flex-col gap-[7px] rounded-card border border-border bg-surface px-4 py-3 shadow-card">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3">
+
+        <label className="flex h-[72px] w-full flex-col gap-[7px] rounded-card border border-[#e2e6e9] bg-white px-4 py-3 shadow-[0px_8px_24px_0px_rgba(17,17,17,0.04)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#778188]">
             Email
           </span>
           <input
@@ -88,61 +94,113 @@ export function LoginForm({
             type="email"
             required
             autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             placeholder="name@organisation.org"
-            className="bg-transparent text-[16px] text-text-1 outline-none placeholder:text-text-2"
+            className="bg-transparent text-[16px] text-[#121212] outline-none placeholder:text-[#778188]"
           />
         </label>
+
+        <label className="flex h-[72px] w-full flex-col gap-[7px] rounded-card border border-[#e2e6e9] bg-white px-4 py-3 shadow-[0px_8px_24px_0px_rgba(17,17,17,0.04)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#778188]">
+            Password
+          </span>
+          <span className="flex items-center justify-between gap-3">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              placeholder="••••••••••"
+              className="min-w-0 flex-1 bg-transparent text-[16px] text-[#121212] outline-none placeholder:text-[#778188]"
+            />
+            <button
+              type="button"
+              className="shrink-0 p-0.5"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((value) => !value)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/login/eye.svg" alt="" className="size-[17px] max-w-none" />
+            </button>
+          </span>
+        </label>
+
         {formError ? (
-          <p className="pt-3 text-[13px] text-conf-low" role="alert">
+          <p className="text-[13px] text-conf-low" role="alert">
             {formError}
           </p>
         ) : null}
-        {message ? <p className="pt-3 text-[13px] text-accent">{message}</p> : null}
-        <button
-          type="submit"
-          disabled={pending}
-          className="mt-5 flex h-12 w-full items-center justify-center rounded-button border border-primary bg-primary text-[12px] font-semibold tracking-[0.1em] text-on-primary disabled:opacity-60"
-        >
-          {pending ? "SENDING" : "SIGN IN"}
-        </button>
+        {message ? <p className="text-[13px] text-[#149020]">{message}</p> : null}
+
+        <div className="flex w-full justify-end pt-3">
+          <button
+            type="button"
+            className="text-[14px] font-medium text-[#149020]"
+            onClick={async () => {
+              setFormError(null);
+              setMessage(null);
+              const data = new FormData();
+              data.set("email", email);
+              const result = await requestPasswordReset(data);
+              if (!result.ok) {
+                setFormError(result.error);
+                return;
+              }
+              setMessage("Password reset email sent — check your inbox.");
+            }}
+          >
+            Forgot password?
+          </button>
+        </div>
+
+        <div className="w-full pt-5">
+          <button
+            type="submit"
+            disabled={pending}
+            className="flex h-12 w-full items-center justify-center rounded-button border border-[#121212] bg-[#121212] text-[14px] font-bold tracking-[0.1em] text-white disabled:opacity-60"
+          >
+            {pending ? "SIGNING IN" : "Sign In"}
+          </button>
+        </div>
       </form>
 
-      <div className="flex items-center gap-3.5 py-6">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-[13px] text-text-3">or</span>
-        <span className="h-px flex-1 bg-border" />
+      <div className="flex w-full items-center gap-3.5 py-6">
+        <span className="h-px flex-1 bg-[#e2e6e9]" />
+        <span className="text-[13px] text-[#778188]">or</span>
+        <span className="h-px flex-1 bg-[#e2e6e9]" />
       </div>
 
-      <form action={signInWithGoogle}>
+      <form action={signInWithGoogle} className="w-full">
         {next ? <input type="hidden" name="next" value={next} /> : null}
         <button
           type="submit"
-          className="flex h-12 w-full items-center justify-center rounded-button border border-border bg-surface text-[12px] font-semibold tracking-[0.1em] text-text-1 shadow-card"
+          className="flex h-12 w-full items-center justify-center rounded-button border border-[#e2e6e9] bg-white text-[14px] font-bold capitalize tracking-[0.1em] text-[#121212] shadow-[0px_8px_24px_0px_rgba(17,17,17,0.04)]"
         >
-          CONTINUE WITH GOOGLE
+          Continue with SSO
         </button>
       </form>
 
-      <p className="pt-6 text-center text-[13px] text-text-2">
-        New here? <span className="font-medium text-accent">Create an organisation</span>
+      <p className="w-full pt-6 text-center text-[14px] text-[#778188]">
+        New here?{" "}
+        <span className="font-medium text-[#149020]">Create an organisation</span>
       </p>
-      <p className="pt-10 text-center text-[13px] text-text-3">Terms · Privacy · Support</p>
 
       {allowlist.length > 0 ? (
-        <div className="mt-8 border-t border-border pt-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3">
+        <div className="mt-8 w-full border-t border-[#e2e6e9] pt-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#778188]">
             Allowed access
           </p>
           <div className="mt-3 flex flex-col gap-2">
-            {allowlist.map((email) => (
-              <form key={email} action={signInAllowlisted}>
+            {allowlist.map((entry) => (
+              <form key={entry} action={signInAllowlisted}>
                 {next ? <input type="hidden" name="next" value={next} /> : null}
-                <input type="hidden" name="email" value={email} />
+                <input type="hidden" name="email" value={entry} />
                 <button
                   type="submit"
-                  className="flex h-10 w-full items-center justify-center rounded-button border border-border text-[13px] text-text-1"
+                  className="flex h-10 w-full items-center justify-center rounded-button border border-[#e2e6e9] text-[13px] text-[#121212]"
                 >
-                  Continue as {email}
+                  Continue as {entry}
                 </button>
               </form>
             ))}
@@ -151,8 +209,8 @@ export function LoginForm({
       ) : null}
 
       {process.env.NODE_ENV === "development" ? (
-        <div className="mt-8 border-t border-border pt-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3">
+        <div className="mt-8 w-full border-t border-[#e2e6e9] pt-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#778188]">
             Development
           </p>
           <div className="mt-3 flex flex-col gap-2">
@@ -161,7 +219,7 @@ export function LoginForm({
                 <input type="hidden" name="email" value={account.email} />
                 <button
                   type="submit"
-                  className="flex h-10 w-full items-center justify-center rounded-button border border-border text-[13px] text-text-1"
+                  className="flex h-10 w-full items-center justify-center rounded-button border border-[#e2e6e9] text-[13px] text-[#121212]"
                 >
                   Sign in as {account.name}
                 </button>
@@ -170,6 +228,6 @@ export function LoginForm({
           </div>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

@@ -70,6 +70,43 @@ export async function requestMagicLink(formData: FormData) {
   return { ok: true as const };
 }
 
+export async function signInWithPassword(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const parsed = z.string().email().safeParse(email);
+  if (!parsed.success) return { ok: false as const, error: "Enter a valid email." };
+  if (password.length < 6) return { ok: false as const, error: "Enter your password." };
+
+  const next = safeNext(formData.get("next"));
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data,
+    password,
+  });
+  if (error) return { ok: false as const, error: error.message };
+
+  const session = await getSession();
+  redirect(
+    destinationAfterAuth({
+      memberships: session?.organisations.length ?? 0,
+      next: next ?? "/",
+    }),
+  );
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const parsed = z.string().email().safeParse(email);
+  if (!parsed.success) return { ok: false as const, error: "Enter your email first." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+    redirectTo: `${studioUrl()}/auth/confirm?next=${encodeURIComponent("/settings/profile")}`,
+  });
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const };
+}
+
 export async function signInWithGoogle(formData: FormData) {
   const next = safeNext(formData.get("next"));
   const supabase = await createClient();
@@ -80,7 +117,7 @@ export async function signInWithGoogle(formData: FormData) {
     },
   });
   if (error || !data.url) {
-    redirect(`/login?error=${encodeURIComponent(error?.message ?? "Google sign-in is unavailable")}`);
+    redirect(`/login?error=${encodeURIComponent(error?.message ?? "SSO sign-in is unavailable")}`);
   }
   redirect(data.url);
 }
