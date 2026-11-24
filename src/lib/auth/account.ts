@@ -21,6 +21,19 @@ export const DEV_ACCOUNTS = [
   { email: "s.rao@anvaya.test", name: "S. Rao" },
 ] as const;
 
+/** Default account for one-click dummy Sign In / Google on the login screen. */
+export const DUMMY_LOGIN_ACCOUNT = DEV_ACCOUNTS[0];
+
+/**
+ * Instant demo login (no real password / Google).
+ * On by default. Set AUTH_DUMMY_LOGIN=0 to restore real password + Google OAuth.
+ */
+export function isDummyLoginEnabled(): boolean {
+  const flag = process.env.AUTH_DUMMY_LOGIN?.trim().toLowerCase();
+  if (flag === "0" || flag === "false" || flag === "off") return false;
+  return true;
+}
+
 /** Comma-separated emails in AUTH_ALLOWLIST that may use one-click studio sign-in in production. */
 export function authAllowlist(): string[] {
   return (process.env.AUTH_ALLOWLIST ?? "")

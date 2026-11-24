@@ -4,11 +4,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEV_ACCOUNTS,
+  DUMMY_LOGIN_ACCOUNT,
   INVITE_ROLES,
   ORG_COOKIE,
   ORGANISATION_KINDS,
   destinationAfterAuth,
   isAllowlistedEmail,
+  isDummyLoginEnabled,
   slugify,
   type InviteRole,
   type OrgRole,
@@ -123,7 +125,53 @@ export async function signInWithGoogle(formData: FormData) {
   redirect(data.url);
 }
 
-async function signInWithAdminMagicLink(email: string, next: string | null = "/") {
+async function ensureAuthUser(email: string, name: string) {
+  const admin = createAdminClient();
+  const { data: listed } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const existing = listed?.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+  if (existing) return existing.id;
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: { full_name: name },
+  });
+  if (error || !data.user) {
+    // Race: user may have been created between list and create.
+    const retry = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const found = retry.data?.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+    if (found) return found.id;
+    redirect(`/login?error=${encodeURIComponent(error?.message ?? "Could not create demo user")}`);
+  }
+  return data.user.id;
+}
+
+async function ensureOrgMembership(userId: string) {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("org_members")
+    .select("org_id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if ((count ?? 0) > 0) return;
+
+  await admin.from("profiles").upsert(
+    {
+      id: userId,
+      name: DUMMY_LOGIN_ACCOUNT.name,
+      initials: "AI",
+      title: "Member",
+    },
+    { onConflict: "id" },
+  );
+  await admin.from("org_members").insert({
+    org_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+    user_id: userId,
+    role: "owner",
+  });
+}
+
+async function signInWithAdminMagicLink(email: string, next: string | null = "/", name = "Member") {
+  await ensureAuthUser(email, name);
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.generateLink({
     type: "magiclink",
@@ -142,6 +190,11 @@ async function signInWithAdminMagicLink(email: string, next: string | null = "/"
     redirect(`/login?error=${encodeURIComponent(verifyError.message)}`);
   }
 
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    await ensureOrgMembership(userData.user.id);
+  }
+
   const session = await getSession();
   redirect(
     destinationAfterAuth({
@@ -151,15 +204,28 @@ async function signInWithAdminMagicLink(email: string, next: string | null = "/"
   );
 }
 
+/** One-click dummy Sign In / Google — skips real password and OAuth. */
+export async function signInDummy(formData: FormData) {
+  if (!isDummyLoginEnabled()) {
+    redirect("/login?error=Dummy%20login%20is%20disabled");
+  }
+  await signInWithAdminMagicLink(
+    DUMMY_LOGIN_ACCOUNT.email,
+    safeNext(formData.get("next")) ?? "/",
+    DUMMY_LOGIN_ACCOUNT.name,
+  );
+}
+
 export async function signInAsDev(formData: FormData) {
-  if (process.env.NODE_ENV !== "development") {
+  if (process.env.NODE_ENV !== "development" && !isDummyLoginEnabled()) {
     redirect("/login?error=Development%20sign-in%20is%20unavailable");
   }
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!DEV_EMAILS.has(email)) {
     redirect("/login?error=Unknown%20development%20account");
   }
-  await signInWithAdminMagicLink(email, safeNext(formData.get("next")) ?? "/");
+  const account = DEV_ACCOUNTS.find((item) => item.email === email);
+  await signInWithAdminMagicLink(email, safeNext(formData.get("next")) ?? "/", account?.name ?? "Member");
 }
 
 /** One-click sign-in for AUTH_ALLOWLIST emails (production demo access). */

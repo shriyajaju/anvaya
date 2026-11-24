@@ -6,6 +6,7 @@ import {
   requestPasswordReset,
   signInAllowlisted,
   signInAsDev,
+  signInDummy,
   signInWithGoogle,
   signInWithPassword,
 } from "@/server/auth";
@@ -16,11 +17,13 @@ export function LoginForm({
   error,
   next,
   allowlist = [],
+  dummyLogin = false,
 }: {
   error?: string;
   next?: string;
   sent?: boolean;
   allowlist?: string[];
+  dummyLogin?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -66,7 +69,9 @@ export function LoginForm({
           Welcome back
         </h1>
         <p className="w-full text-[16px] leading-[1.5] text-[#778188]">
-          Sign in to your heritage workspace.
+          {dummyLogin
+            ? "Demo mode — Sign In or Google takes you straight into Studio."
+            : "Sign in to your heritage workspace."}
         </p>
       </div>
 
@@ -76,6 +81,10 @@ export function LoginForm({
           setPending(true);
           setFormError(null);
           setMessage(null);
+          if (dummyLogin) {
+            await signInDummy(formData);
+            return;
+          }
           const result = await signInWithPassword(formData);
           setPending(false);
           if (result && !result.ok) {
@@ -92,11 +101,11 @@ export function LoginForm({
           <input
             name="email"
             type="email"
-            required
+            required={!dummyLogin}
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="name@organisation.org"
+            placeholder={dummyLogin ? "a.iyer@anvaya.test" : "name@organisation.org"}
             className="bg-transparent text-[16px] text-[#121212] outline-none placeholder:text-[#778188]"
           />
         </label>
@@ -109,7 +118,7 @@ export function LoginForm({
             <input
               name="password"
               type={showPassword ? "text" : "password"}
-              required
+              required={!dummyLogin}
               autoComplete="current-password"
               placeholder="••••••••••"
               className="min-w-0 flex-1 bg-transparent text-[16px] text-[#121212] outline-none placeholder:text-[#778188]"
@@ -136,7 +145,8 @@ export function LoginForm({
         <div className="flex w-full justify-end pt-3">
           <button
             type="button"
-            className="text-[14px] font-medium text-[#149020]"
+            className="text-[14px] font-medium text-[#149020] disabled:opacity-40"
+            disabled={dummyLogin}
             onClick={async () => {
               setFormError(null);
               setMessage(null);
@@ -171,7 +181,7 @@ export function LoginForm({
         <span className="h-px flex-1 bg-[#e2e6e9]" />
       </div>
 
-      <form action={signInWithGoogle} className="w-full">
+      <form action={dummyLogin ? signInDummy : signInWithGoogle} className="w-full">
         {next ? <input type="hidden" name="next" value={next} /> : null}
         <button
           type="submit"

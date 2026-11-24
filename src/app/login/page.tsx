@@ -1,4 +1,4 @@
-import { authAllowlist, destinationAfterAuth } from "@/lib/auth/account";
+import { authAllowlist, destinationAfterAuth, isDummyLoginEnabled } from "@/lib/auth/account";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
@@ -26,6 +26,7 @@ export default async function LoginPage({
           next={params.next}
           sent={params.sent === "1"}
           allowlist={authAllowlist()}
+          dummyLogin={isDummyLoginEnabled()}
         />
         <p className="absolute bottom-16 left-1/2 w-full max-w-[400px] -translate-x-1/2 translate-y-full text-center text-[13px] text-[#778188]">
           Terms · Privacy · Support
