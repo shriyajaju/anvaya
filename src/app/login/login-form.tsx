@@ -69,9 +69,7 @@ export function LoginForm({
           Welcome back
         </h1>
         <p className="w-full text-[16px] leading-[1.5] text-[#778188]">
-          {dummyLogin
-            ? "Demo mode — Sign In or Google takes you straight into Studio."
-            : "Sign in to your heritage workspace."}
+          Sign in to your heritage workspace.
         </p>
       </div>
 
@@ -187,7 +185,7 @@ export function LoginForm({
           type="submit"
           className="flex h-12 w-full items-center justify-center rounded-button border border-[#e2e6e9] bg-white text-[14px] font-bold capitalize tracking-[0.1em] text-[#121212] shadow-[0px_8px_24px_0px_rgba(17,17,17,0.04)]"
         >
-          Continue with Google
+          Continue with SSO
         </button>
       </form>
 
