@@ -155,6 +155,8 @@ export function ArchiveBoard({
 function VersionCard({ version, previous, current }: { version: VersionCardData; previous?: VersionCardData; current: boolean }) {
   const compare = previous ? `/s/${version.slug}/archive?left=${previous.id}&right=${version.id}` : null;
   const total = version.high + version.medium + version.low;
+  const qrSrc = `/api/qr/${version.slug}/png?v=${encodeURIComponent(version.number)}`;
+  const visitorHref = `/${version.slug}?v=${encodeURIComponent(version.number)}`;
   const segments = [
     ...Array.from({ length: version.high }, () => "bg-[#4a5a2a]"),
     ...Array.from({ length: version.medium }, () => "bg-[#9a8150]"),
@@ -162,22 +164,45 @@ function VersionCard({ version, previous, current }: { version: VersionCardData;
   ];
   return (
     <article className="flex min-h-[220px] w-full max-w-[560px] flex-col justify-between gap-3 rounded-card border border-border bg-surface p-5 shadow-[0_8px_24px_rgba(17,17,17,0.04)]">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[1px] text-text-2">
-          Version {version.number} · Published {publishedLabel(version.publishedAt)}
-        </p>
-        {current ? (
-          <span className="inline-flex items-center gap-1.5 rounded-pill bg-[#e7ebdd] px-[9px] py-[5px] text-[10px] font-medium text-[#4a5a2a]">
-            <span className="size-[5px] rounded-full bg-[#4a5a2a]" />
-            Current
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[1px] text-text-2">
+              Version {version.number} · Published {publishedLabel(version.publishedAt)}
+            </p>
+            {current ? (
+              <span className="inline-flex items-center gap-1.5 rounded-pill bg-[#e7ebdd] px-[9px] py-[5px] text-[10px] font-medium text-[#4a5a2a]">
+                <span className="size-[5px] rounded-full bg-[#4a5a2a]" />
+                Current
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-3">
+            <h3 className="text-[18px] font-medium leading-[1.25] text-text-1">{version.note || "Published reconstruction"}</h3>
+            <p className="mt-[5px] text-[11px] text-text-2">
+              {countLabel(version.elements, "element")} · {countLabel(version.sources, "source")} · {countLabel(version.stories, "story")} · {countLabel(version.locations, "visitor location")}
+            </p>
+          </div>
+        </div>
+        <a
+          href={visitorHref}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex w-[88px] shrink-0 flex-col items-center gap-1.5 rounded-[10px] border border-border bg-page p-2 transition-shadow hover:shadow-card"
+          title={`Scan to open version ${version.number}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrSrc}
+            alt={`QR code for ${version.siteName} version ${version.number}`}
+            width={72}
+            height={72}
+            className="size-[72px] rounded-md bg-white p-1"
+          />
+          <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-text-3 group-hover:text-text-2">
+            Scan
           </span>
-        ) : null}
-      </div>
-      <div>
-        <h3 className="text-[18px] font-medium leading-[1.25] text-text-1">{version.note || "Published reconstruction"}</h3>
-        <p className="mt-[5px] text-[11px] text-text-2">
-          {countLabel(version.elements, "element")} · {countLabel(version.sources, "source")} · {countLabel(version.stories, "story")} · {countLabel(version.locations, "visitor location")}
-        </p>
+        </a>
       </div>
       <div>
         <div className="flex items-center justify-between text-[9px] font-semibold">
@@ -195,12 +220,14 @@ function VersionCard({ version, previous, current }: { version: VersionCardData;
           <span className="inline-flex items-center gap-[5px]"><span className="size-[5px] rounded-full bg-[#d8d6d0]" />Low</span>
         </div>
       </div>
-      <div className="flex items-center gap-3 border-t border-border pt-2.5 text-[11px] font-medium text-accent">
-        <a href={`/${version.slug}?v=${encodeURIComponent(version.number)}`}>Explore version</a>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2.5 text-[11px] font-medium text-accent">
+        <a href={visitorHref}>Explore version</a>
         <span className="font-normal text-text-2">·</span>
         {compare ? <Link href={compare}>Compare</Link> : <span className="text-text-3">Compare</span>}
         <span className="font-normal text-text-2">·</span>
         <a href={`/api/archive/${version.id}`}>Download package</a>
+        <span className="font-normal text-text-2">·</span>
+        <a href={`/api/qr/${version.slug}`}>QR sheet</a>
       </div>
     </article>
   );

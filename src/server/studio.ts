@@ -223,7 +223,11 @@ export async function dashboardForOrg(orgId: string): Promise<{
     .from("attention")
     .select("site_id, target_id, kind, title, meta, step, level")
     .in("site_id", ids);
-  if (error) throw new Error(error.message);
+  // Missing view / RLS should not take down the dashboard.
+  if (error) {
+    console.error("attention", error.message);
+    return { inProgress, attention: [], continueSite: null };
+  }
 
   const attention: AttentionItem[] = (data ?? []).flatMap((row) => {
     const step = row.step as string;

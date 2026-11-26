@@ -80,24 +80,42 @@ export async function getSession(): Promise<AppSession | null> {
       name,
       initials: initialsFromName(name),
     });
-    if (insertError) throw new Error(insertError.message);
+    // Race / RLS: continue and re-read; avoid crashing the whole Studio shell.
+    if (insertError && insertError.code !== "23505") {
+      console.error("profile insert", insertError.message);
+    }
   }
 
   const { error: inviteError } = await supabase.rpc("accept_pending_invites");
-  if (inviteError) throw new Error(inviteError.message);
+  if (inviteError) {
+    // Invites are best-effort — never hard-crash authenticated routes.
+    console.error("accept_pending_invites", inviteError.message);
+  }
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("name, initials, title, avatar_url")
     .eq("id", user.id)
-    .single();
-  if (profileError || !profile) throw new Error(profileError?.message ?? "Profile missing");
+    .maybeSingle();
+  if (profileError) {
+    console.error("profile read", profileError.message);
+    return null;
+  }
+  const resolvedProfile = profile ?? {
+    name,
+    initials: initialsFromName(name),
+    title: null as string | null,
+    avatar_url: null as string | null,
+  };
 
   const { data: rows, error: memberError } = await supabase
     .from("org_members")
     .select("role, organisations(id, name, slug, kind)")
     .eq("user_id", user.id);
-  if (memberError) throw new Error(memberError.message);
+  if (memberError) {
+    console.error("org_members", memberError.message);
+    return null;
+  }
 
   const organisations: Membership[] = (rows ?? []).flatMap((row) => {
     const org = oneOrg((row as MemberRow).organisations);
@@ -122,10 +140,10 @@ export async function getSession(): Promise<AppSession | null> {
     userId: user.id,
     email: user.email ?? null,
     profile: {
-      name: profile.name,
-      initials: profile.initials,
-      title: profile.title,
-      avatarUrl: profile.avatar_url,
+      name: resolvedProfile.name,
+      initials: resolvedProfile.initials,
+      title: resolvedProfile.title,
+      avatarUrl: resolvedProfile.avatar_url,
     },
     organisations,
     org,

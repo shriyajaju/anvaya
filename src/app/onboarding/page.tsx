@@ -2,6 +2,8 @@ import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { OrganisationForm } from "./organisation-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage({
   searchParams,
 }: {
